@@ -1,4 +1,13 @@
-**TODO : Please modify this file according to the following**
+# Build / Compile Guide
 
-Fill this document with the instructions (for each architecture required) necessary to compile the software.  
+This project is written in Python and does not require compilation.
 
+Before execution install all dependencies on istall.md
+
+
+
+Run the API using:
+
+```bash
+uvicorn main:app 
+```
