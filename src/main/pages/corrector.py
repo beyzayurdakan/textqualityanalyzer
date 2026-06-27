@@ -8,66 +8,34 @@ except ImportError:
 
 
 # ---------------------------------------------------------------------------
-# Lookup tables used by rule helpers
-# ---------------------------------------------------------------------------
-#
-# Design principle
-# ----------------
-# Each set below is a curated *seed* of known exceptions or members.
-# At runtime, GrammarCorrector.__init__() calls _build_dynamic_lexicons()
-# which runs the loaded spaCy model over a representative corpus of Italian
-# sentences and uses the model's own morphology tags to extend these sets
-# automatically.  That way the lists stay useful even for words that weren't
-# hand-curated here.
-#
-# You can always add words directly to the seed sets below; they will be
-# merged with whatever the dynamic builder discovers.
+# Lookup tables
 # ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# MASCULINE NOUNS whose surface form ends in -a (Greek/Latin loans)
-# and are therefore systematically confused with feminine nouns.
-# Pattern: -ma, -ta, -pa, -ra, -da, -ca endings from Greek -μα/-τα etc.
-# ---------------------------------------------------------------------------
 _MASCULINE_NOUNS: set[str] = {
-    # -ma words (Greek neuter -μα)
+    # -ma words (Greek neuter)
     "problema", "programma", "sistema", "tema", "clima", "schema",
     "panorama", "diploma", "dramma", "poema", "aroma", "fantasma",
     "prisma", "teorema", "dilemma", "dogma", "enigma", "emblema",
-    "trauma", "plasma", "sintoma", "sintoma", "telegramma", "telegramma",
-    "diagramma", "anagramma", "epigrama", "epigramma", "ideogramma",
-    "monogramma", "ologramma", "fonogramma", "crittogramma",
-    "panorama", "diorama", "cosmorama", "georama",
+    "trauma", "plasma", "telegramma", "diagramma", "anagramma",
+    "epigramma", "ideogramma", "monogramma", "ologramma", "diorama",
     "reuma", "edema", "eczema", "enema", "enfisema", "glaucoma",
     "melanoma", "carcinoma", "adenoma", "sarcoma", "linfoma",
     # -ta words
-    "atleta", "pianeta", "poeta", "profeta", "cometa", "meta",
+    "atleta", "pianeta", "poeta", "profeta", "cometa",
     "delta", "beta", "eta", "zeta", "theta",
-    # -ista words used as masculine nouns in context
+    # -ista used as masculine
     "artista", "giornalista", "pianista", "violinista", "ciclista",
     "dentista", "terrorista", "comunista", "fascista", "capitalista",
     "socialista", "ottimista", "pessimista", "realista", "idealista",
-    "protagonista", "antagonista", "antagonista",
-    # other irregular masculines
+    "protagonista", "antagonista",
+    # other
     "brindisi", "alibi", "safari", "koala", "panda", "gorilla",
-    "lama",   # the animal / monk
-    "vaglia",  # postal order
-    "sosia",   # look-alike
+    "lama", "vaglia", "sosia",
 }
 
-# ---------------------------------------------------------------------------
-# FEMININE NOUNS whose surface form ends in -o or looks masculine.
-# ---------------------------------------------------------------------------
 _FEMININE_NOUNS: set[str] = {
-    # Short clippings (always feminine regardless of ending)
-    "mano",   # irregular historical feminine
-    "radio", "foto", "moto", "auto", "metro", "bici",
-    "eco",    # feminine in singular: l'eco sonora
-    # Foreign loanwords treated as feminine
-    "moto",   # motocicletta
+    "mano", "radio", "foto", "moto", "auto", "metro", "bici", "eco",
     "dinamo", "libido",
-    # -ione / -zione / -sione (all feminine — important high-frequency class)
-    # (These end in -e not -o but are often misgendered by learners)
     "nazione", "situazione", "soluzione", "relazione", "collaborazione",
     "comunicazione", "informazione", "istruzione", "tradizione", "funzione",
     "condizione", "azione", "reazione", "produzione", "distribuzione",
@@ -76,51 +44,31 @@ _FEMININE_NOUNS: set[str] = {
     "attenzione", "intenzione", "menzione", "tensione", "pensione",
     "versione", "visione", "revisione", "previsione", "divisione",
     "invasione", "evasione", "persuasione", "illusione", "allusione",
-    # -tà / -tù (all feminine)
     "città", "libertà", "verità", "qualità", "università", "attività",
     "capacità", "possibilità", "opportunità", "necessità", "realtà",
-    "identità", "priorità", "sicurezza", "difficoltà", "novità",
-    "curiosità", "creatività", "nazionalità", "personalità",
-    # -si (Greek feminine)
+    "identità", "priorità", "difficoltà", "novità", "curiosità",
+    "creatività", "nazionalità", "personalità",
     "crisi", "tesi", "analisi", "sintesi", "ipotesi", "diagnosi",
     "prognosi", "nevrosi", "psicosi", "metamorfosi", "osmosi",
     "parentesi", "enfasi", "perifrasi",
 }
 
-# ---------------------------------------------------------------------------
-# VERBS that form compound tenses with ESSERE (not avere).
-# Includes: motion verbs, change-of-state verbs, copulas,
-# weather verbs, impersonal verbs, all reflexives (handled separately).
-# ---------------------------------------------------------------------------
+# Verbs that take ESSERE as auxiliary in compound tenses
 _ESSERE_VERBS: set[str] = {
-    # Core motion verbs
     "andare", "venire", "partire", "arrivare", "tornare", "uscire",
     "entrare", "salire", "scendere", "cadere", "fuggire", "scappare",
-    "correre",   # correre can take either; essere when intransitive
-    "passare",   # essere when intransitive motion
-    "ritornare", "rientrare", "ripartire", "riuscire", "risalire",
-    "ridiscendere", "rivenire",
-    # Change-of-state / becoming
-    "nascere", "morire", "diventare", "divenire", "crescere",
-    "invecchiare", "migliorare", "peggiorare", "guarire", "ammalarsi",
-    "ingrassare", "dimagrire", "arrossire", "impallidire",
-    # Copulas and stative
+    "passare", "ritornare", "rientrare", "ripartire", "riuscire",
+    "risalire", "rivenire", "nascere", "morire", "diventare", "divenire",
+    "crescere", "invecchiare", "migliorare", "peggiorare", "guarire",
+    "ammalarsi", "ingrassare", "dimagrire", "arrossire", "impallidire",
     "essere", "stare", "sembrare", "parere", "risultare", "apparire",
-    "restare", "rimanere", "durare",
-    # Impersonal / weather (used with essere in most constructions)
-    "piacere", "dispiacere", "succedere", "accadere", "capitare",
-    "mancare", "bastare", "costare", "servire", "importare",
-    "interessare", "dipendere", "appartenere",
-    "piovere", "nevicare", "grandinare", "tuonare",
-    # Verbs of appearance / disappearance
-    "comparire", "scomparire", "apparire", "sparire", "emergere",
-    "affiorare", "sorgere", "tramontare",
-    # Verbs of spatial relation / existence
-    "esistere", "vivere",   # can take essere (intransitive)
-    "giacere", "stendersi",
-    # Common inchoatives
-    "cominciare", "iniziare", "finire", "terminare", "smettere",
-    # Reflexive verbs (all take essere — representative set)
+    "restare", "rimanere", "durare", "piacere", "dispiacere",
+    "succedere", "accadere", "capitare", "mancare", "bastare",
+    "costare", "servire", "importare", "interessare", "dipendere",
+    "appartenere", "piovere", "nevicare", "grandinare", "tuonare",
+    "comparire", "scomparire", "sparire", "emergere", "affiorare",
+    "sorgere", "tramontare", "esistere", "vivere", "giacere",
+    "cominciare", "iniziare", "finire", "terminare",
     "alzarsi", "lavarsi", "vestirsi", "sedersi", "fermarsi",
     "sentirsi", "trovarsi", "chiamarsi", "svegliarsi", "addormentarsi",
     "annoiarsi", "arrabbiarsi", "dimenticarsi", "innamorarsi",
@@ -128,9 +76,15 @@ _ESSERE_VERBS: set[str] = {
     "avvicinarsi", "accorgersi", "rendersi", "prepararsi",
 }
 
-# Preposition contractions: prep + article → contracted form
-# Used to detect *wrong* contractions (user wrote articulated when they
-# should not, or wrote the plain form when they should have contracted).
+# Verbs that can take EITHER essere OR avere depending on transitive use
+# When used with a direct object → avere; otherwise → essere
+_DUAL_AUXILIARY_VERBS: set[str] = {
+    "aumentare", "cambiare", "cominciare", "crescere", "cuocere",
+    "esplodere", "finire", "guarire", "salire", "fallire", "correre",
+    "passare", "migliorare", "peggiorare", "iniziare", "terminare",
+    "scendere", "montare", "volare", "bruciare", "affogare",
+}
+
 _PREP_ARTICLE_CONTRACTIONS = {
     ("di", "il"):  "del",
     ("di", "lo"):  "dello",
@@ -169,55 +123,82 @@ _PREP_ARTICLE_CONTRACTIONS = {
     ("su", "l'"):  "sull'",
 }
 
-# Reverse map: contracted form → (prep, article)
 _CONTRACTED_TO_PARTS = {v: k for k, v in _PREP_ARTICLE_CONTRACTIONS.items()}
 
-# Prepositions that should NOT be contracted with a following article
-# (e.g. "con" is usually left separate in modern Italian)
-_NON_CONTRACTING_PREPS = {"con", "per", "tra", "fra", "su"}  # "su" does contract
+# Bare preposition each contracted form resolves to
+_CONTRACTED_BARE_PREP = {
+    contracted: prep
+    for (prep, _art), contracted in _PREP_ARTICLE_CONTRACTIONS.items()
+}
 
-# Verbs whose argument must be introduced by a specific preposition
-# Format: lemma → {"expected": prep, "wrong": [list of wrong preps], "example": ...}
+# Verb-preposition collocations.
+# "wrong" lists only BARE prepositions (never contracted forms).
 _VERB_PREP_RULES = {
     "andare": {
         "expected": "a",
-        "wrong": ["in", "al"],
-        "note": "Motion to a place: 'andare a + inf' or 'andare a + city'.",
+        "wrong": ["in", "per", "su"],   # "al"/"allo" etc. are fine (a+article)
+        "note": "'Andare' richiede 'a' (o forma contratta 'al/allo…') per moto a luogo.",
+    },
+    "venire": {
+        "expected": "a",
+        "wrong": ["in", "per"],
+        "note": "'Venire' richiede 'a' per moto a luogo.",
     },
     "pensare": {
         "expected": "a",
-        "wrong": ["di"],
-        "note": "Pensare A qualcosa (think about); pensare DI fare (intend to do).",
+        "wrong": ["su"],
+        # "di" is valid with infinitive (pensare di fare), so we don't flag it
+        "note": "'Pensare a qualcosa' (riflettere); 'pensare di fare' (avere intenzione).",
     },
     "ringraziare": {
         "expected": "per",
         "wrong": ["di"],
-        "note": "Ringraziare PER qualcosa.",
+        "note": "'Ringraziare per qualcosa'.",
     },
     "dipendere": {
         "expected": "da",
-        "wrong": ["di", "a"],
-        "note": "Dipendere DA qualcosa/qualcuno.",
+        "wrong": ["di", "su"],
+        "note": "'Dipendere da qualcosa/qualcuno'.",
     },
     "parlare": {
         "expected": "di",
-        "wrong": ["su", "a"],
-        "note": "Parlare DI qualcosa.",
+        "wrong": ["su", "per"],
+        "note": "'Parlare di qualcosa'.",
+    },
+    "accorgersi": {
+        "expected": "di",
+        "wrong": ["a", "su"],
+        "note": "'Accorgersi di qualcosa'.",
+    },
+    "dimenticarsi": {
+        "expected": "di",
+        "wrong": ["a", "su"],
+        "note": "'Dimenticarsi di qualcosa'.",
+    },
+    "preoccuparsi": {
+        "expected": "di",
+        "wrong": ["su", "per"],
+        "note": "'Preoccuparsi di qualcosa'.",
+    },
+    "fidarsi": {
+        "expected": "di",
+        "wrong": ["a", "su", "in"],
+        "note": "'Fidarsi di qualcuno'.",
+    },
+    "credere": {
+        "expected": "a",
+        "wrong": ["su", "per"],
+        # "credere di" with infinitive is valid
+        "note": "'Credere a qualcuno/qualcosa' (prestare fede).",
     },
 }
 
-# ---------------------------------------------------------------------------
-# Lookup tables for rules 9–16
-# ---------------------------------------------------------------------------
-
-# Copular / linking verbs whose predicate adjective must agree with subject
 _COPULAR_VERBS = {
     "essere", "sembrare", "parere", "diventare", "divenire", "restare",
     "rimanere", "apparire", "risultare", "sentirsi", "ritrovarsi",
+    "rivelarsi", "dimostrarsi",
 }
 
-# Reflexive verbs that require a clitic pronoun (lemma → expected clitic lemma)
-# We flag when the verb appears without any clitic child.
 _REFLEXIVE_VERBS = {
     "lavarsi", "alzarsi", "sedersi", "vestirsi", "prepararsi",
     "fermarsi", "sentirsi", "trovarsi", "chiamarsi", "svegliarsi",
@@ -226,10 +207,6 @@ _REFLEXIVE_VERBS = {
     "vergognarsi", "avvicinarsi", "accorgersi", "rendersi",
 }
 
-# Non-reflexive surface forms of reflexive verbs (lemma without -si)
-# Used to detect when the bare verb is used where the reflexive is required.
-_REFLEXIVE_BASE_LEMMAS = {v.rstrip("si").rstrip("r") + "re" for v in _REFLEXIVE_VERBS}
-# Also store the explicit mapping base_lemma → reflexive_lemma for messages
 _REFLEXIVE_LEMMA_MAP = {
     "lavare": "lavarsi", "alzare": "alzarsi", "sedere": "sedersi",
     "vestire": "vestirsi", "preparare": "prepararsi", "fermare": "fermarsi",
@@ -243,126 +220,46 @@ _REFLEXIVE_LEMMA_MAP = {
     "rendere": "rendersi",
 }
 
-# Negative polarity items: when one of these appears without "non" before
-# the finite verb, it is likely a double-negation error.
 _NEGATIVE_POLARITY_WORDS = {
     "niente", "nulla", "nessuno", "nessuna", "mai", "nemmeno",
     "neanche", "neppure", "né", "affatto",
 }
 
-# Italian interrogative / WH-words that trigger word-order check
 _WH_WORDS = {
     "cosa", "che", "chi", "come", "quando", "dove", "perché",
     "quanto", "quale", "quali",
 }
 
-# Modal verbs: the verb immediately following must be infinitive (VerbForm=Inf)
 _MODAL_VERBS = {
     "volere", "potere", "dovere", "sapere", "riuscire", "osare",
     "desiderare", "preferire", "sperare", "tentare", "cercare",
 }
 
+# Past participles of essere/stare that are NOT agreement targets
+# (to avoid flagging "è stato" etc. as errors)
+_ESSERE_STARE_PARTICIPLES = {"stato", "stata", "stati", "state"}
+
 
 class GrammarCorrector:
     """
-    A unified grammar correction class that uses LanguageTool for general
-    spell-checking, punctuation, and structural issues, and utilises
-    spaCy NLP dependency parsing to flag granular Italian agreement errors.
-
-    Rules implemented
-    -----------------
-    LanguageTool (external):
-        • Spelling, punctuation, typography, casing, general grammar.
-
-    spaCy (dependency-parse based):
-        1.  Noun agreement – determiner / adjective ↔ noun
-            (e.g. ``qualche libri``, ``bella ragazzo``)
-        2.  Subject–verb agreement (all 3 spaCy attachment patterns)
-            (e.g. ``Gli studenti va``, ``Il professore hanno spiegato``)
-        3.  Possessive–noun agreement
-            (e.g. ``nostri progetto``)
-        4.  Auxiliary–past-participle agreement
-            (e.g. ``siamo tornato``)
-        5.  Article–noun agreement
-            (e.g. ``un ragazza``, ``la problema``)
-        6.  Post-nominal adjective agreement
-            (e.g. ``case grande``, ``problemi complesso``)
-        7.  Preposition contraction errors
-            (e.g. ``di il libro`` → ``del libro``)
-        8.  Verb–preposition collocation errors
-            (e.g. ``vado in casa`` instead of ``vado a casa``)
-        9.  Predicate adjective agreement          [NEW]
-            (e.g. ``Lei era simpatico`` → ``simpatica``)
-        10. Clitic pronoun–verb agreement          [NEW]
-            (e.g. ``Lo ho visto`` → ``L'ho visto``)
-        11. Partitive article misuse               [NEW]
-            (e.g. ``del mele`` → ``delle mele``)
-        12. Missing reflexive clitic               [NEW]
-            (e.g. ``Mario lava ogni mattina`` missing ``si``)
-        13. Double negation errors                 [NEW]
-            (e.g. ``Ho visto niente`` → ``Non ho visto niente``)
-        14. Interrogative word order               [NEW]
-            (e.g. ``Cosa tu fai?`` → ``Cosa fai?``)
-        15. Gerund subject mismatch                [NEW]
-            (e.g. ``Essendo stanca, lui uscì``)
-        16. Modal + non-infinitive errors          [NEW]
-            (e.g. ``Voglio andati`` → ``Voglio andare``)
+    Italian grammar checker combining LanguageTool and spaCy dependency rules.
     """
 
-    # ------------------------------------------------------------------
-    # Initialisation
-    # ------------------------------------------------------------------
-
     def __init__(self, use_spacy: bool = True):
-        """
-        Initialise LanguageTool for Italian ("it") and optionally load the
-        large Italian spaCy model.
-
-        After loading spaCy the dynamic lexicon builder is called once to
-        extend the seed lookup tables (_MASCULINE_NOUNS, _FEMININE_NOUNS,
-        _ESSERE_VERBS) with anything the model's own morphology reveals from
-        a built-in reference corpus.
-        """
         self.tool = language_tool_python.LanguageTool("it")
-
         self.nlp = None
         if use_spacy and SPACY_AVAILABLE:
             try:
                 self.nlp = spacy.load("it_core_news_lg")
                 self._build_dynamic_lexicons()
             except OSError:
-                print(
-                    "spaCy model not found. Run:\n"
-                    "python -m spacy download it_core_news_lg"
-                )
+                print("spaCy model not found. Run: python -m spacy download it_core_news_lg")
 
     # ------------------------------------------------------------------
     # Dynamic lexicon builder
     # ------------------------------------------------------------------
 
     def _build_dynamic_lexicons(self) -> None:
-        """
-        Extend the three seed sets (_MASCULINE_NOUNS, _FEMININE_NOUNS,
-        _ESSERE_VERBS) by running the loaded spaCy model over a compact
-        reference corpus of Italian sentences that exercise common exception
-        nouns and essere-verbs.
-
-        The model's morphology tagger assigns Gender/Number to each token;
-        we compare that against surface-form heuristics to discover new
-        exceptions automatically.
-
-        Strategy
-        --------
-        Masculine exceptions  : noun ends in -a but model tags Gender=Masc
-        Feminine exceptions   : noun ends in -o/-e but model tags Gender=Fem
-                                (excluding obvious -ione/-tà already in seed)
-        Essere verbs          : VERB lemmas that appear with an essere-AUX
-                                child in the reference corpus
-        """
-        # -------------------------------------------------------------------
-        # Reference corpus – sentences chosen to surface exceptions.
-        # Add more sentences here to improve discovery coverage.
-        # -------------------------------------------------------------------
         _REFERENCE_CORPUS = """
         Il problema principale è la mancanza di risorse.
         Abbiamo sviluppato un nuovo programma informatico.
@@ -429,70 +326,188 @@ class GrammarCorrector:
         Il vecchio edificio è scomparso dopo la demolizione.
         Il sole è sorto all'alba colorando il cielo di rosso.
         La nebbia è emersa lentamente dalla valle.
+        Alcuni dipendenti hanno espresso la loro opinione riguardo al progetto.
+        Ieri sono andato al meeting aziendale e ho partecipato personalmente.
         """
-
         if self.nlp is None:
             return
-
         doc = self.nlp(_REFERENCE_CORPUS)
-
         for token in doc:
             lemma = token.lemma_.lower()
             text_lower = token.text.lower()
             gender = token.morph.get("Gender")
             pos = token.pos_
-
-            # ---------------------------------------------------------------
-            # Discover masculine exception nouns (end in -a but are Masc)
-            # ---------------------------------------------------------------
-            if (
-                pos == "NOUN"
-                and text_lower.endswith("a")
-                and gender == ["Masc"]
-                and lemma not in _MASCULINE_NOUNS
-            ):
+            if pos == "NOUN" and text_lower.endswith("a") and gender == ["Masc"] and lemma not in _MASCULINE_NOUNS:
                 _MASCULINE_NOUNS.add(lemma)
-
-            # ---------------------------------------------------------------
-            # Discover feminine exception nouns (end in -o but are Fem,
-            # or end in -e but are tagged Fem and not already in seed)
-            # ---------------------------------------------------------------
-            if (
-                pos == "NOUN"
-                and (text_lower.endswith("o") or text_lower.endswith("e"))
-                and gender == ["Fem"]
-                and lemma not in _FEMININE_NOUNS
-            ):
+            if pos == "NOUN" and (text_lower.endswith("o") or text_lower.endswith("e")) and gender == ["Fem"] and lemma not in _FEMININE_NOUNS:
                 _FEMININE_NOUNS.add(lemma)
-
-            # ---------------------------------------------------------------
-            # Discover essere-verbs: VERB tokens whose AUX child is essere
-            # ---------------------------------------------------------------
             if pos == "VERB" and lemma not in _ESSERE_VERBS:
                 for child in token.children:
-                    if (
-                        child.dep_ == "aux"
-                        and child.lemma_.lower() == "essere"
-                    ):
+                    if child.dep_ == "aux" and child.lemma_.lower() == "essere":
                         _ESSERE_VERBS.add(lemma)
                         break
 
     # ------------------------------------------------------------------
-    # Generic helpers
+    # Helpers
     # ------------------------------------------------------------------
 
+
+    def _preserve_case(self, original: str, replacement: str) -> str:
+        """Preserve simple capitalisation when building suggestions."""
+        if not original or not replacement:
+            return replacement
+        if original.isupper():
+            return replacement.upper()
+        if original[0].isupper():
+            return replacement.capitalize()
+        return replacement
+
+    def _replace_token_text(self, text: str, token, replacement: str) -> str:
+        """Return the full sentence with one token replaced."""
+        if not replacement:
+            return ""
+        return text[:token.idx] + replacement + text[token.idx + len(token.text):]
+
+    def _remove_token_text(self, text: str, token) -> str:
+        """Return the full sentence with one token removed and spaces cleaned."""
+        start = token.idx
+        end = token.idx + len(token.text)
+        if end < len(text) and text[end:end + 1] == " ":
+            end += 1
+        elif start > 0 and text[start - 1:start] == " ":
+            start -= 1
+        return text[:start] + text[end:]
+
+    def _suggest_article_for_noun(self, article, noun) -> str:
+        """Suggest a simple definite/indefinite article matching noun gender/number."""
+        lower = article.text.lower()
+        gender = noun.morph.get("Gender")
+        number = noun.morph.get("Number")
+        g = gender[0] if gender else None
+        n = number[0] if number else None
+
+        # Override spaCy with project lexicons for common exception nouns.
+        lemma = noun.lemma_.lower()
+        if lemma in _MASCULINE_NOUNS:
+            g = "Masc"
+        elif lemma in _FEMININE_NOUNS:
+            g = "Fem"
+
+        if not g or not n:
+            return ""
+
+        indefinite = lower in {"un", "uno", "una", "un'"}
+        if indefinite and n == "Sing":
+            if g == "Fem":
+                return self._preserve_case(article.text, "un'" if noun.text[:1].lower() in "aeiouàèéìòù" else "una")
+            # Simple masculine default. Your project can later refine uno/un before z, s+consonant, etc.
+            return self._preserve_case(article.text, "un")
+
+        forms = {
+            ("Masc", "Sing"): "il",
+            ("Fem", "Sing"): "la",
+            ("Masc", "Plur"): "i",
+            ("Fem", "Plur"): "le",
+        }
+        suggestion = forms.get((g, n), "")
+        return self._preserve_case(article.text, suggestion)
+
+    def _suggest_finite_verb_number(self, verb, target_number: list) -> str:
+        """Suggest a common finite verb form with the subject's number."""
+        n = target_number[0] if target_number else None
+        if not n:
+            return ""
+        lemma = verb.lemma_.lower()
+        lower = verb.text.lower()
+        maps = {
+            "essere": {"Sing": "è", "Plur": "sono"},
+            "avere": {"Sing": "ha", "Plur": "hanno"},
+            "andare": {"Sing": "va", "Plur": "vanno"},
+            "fare": {"Sing": "fa", "Plur": "fanno"},
+            "stare": {"Sing": "sta", "Plur": "stanno"},
+            "venire": {"Sing": "viene", "Plur": "vengono"},
+            "potere": {"Sing": "può", "Plur": "possono"},
+            "volere": {"Sing": "vuole", "Plur": "vogliono"},
+            "dovere": {"Sing": "deve", "Plur": "devono"},
+        }
+        if lemma in maps:
+            return self._preserve_case(verb.text, maps[lemma][n])
+
+        # Limited regular fallback for present indicative 3rd person.
+        if n == "Plur":
+            if lower.endswith("a"):
+                return self._preserve_case(verb.text, lower[:-1] + "ano")
+            if lower.endswith("e"):
+                return self._preserve_case(verb.text, lower[:-1] + "ono")
+        if n == "Sing":
+            if lower.endswith("ano"):
+                return self._preserve_case(verb.text, lower[:-3] + "a")
+            if lower.endswith("ono"):
+                return self._preserve_case(verb.text, lower[:-3] + "e")
+        return ""
+
+    def _suggest_wrong_auxiliary_phrase(self, aux_token, participle_token, correct_aux_lemma: str) -> str:
+        """Suggest a compact auxiliary + participle replacement phrase."""
+        number = None
+        gender = None
+        for child in participle_token.children:
+            if child.dep_ in ("nsubj", "nsubj:pass"):
+                number = (child.morph.get("Number") or [None])[0]
+                gender = (child.morph.get("Gender") or [None])[0]
+                break
+        number = number or (participle_token.morph.get("Number") or ["Sing"])[0]
+        gender = gender or (participle_token.morph.get("Gender") or ["Masc"])[0]
+        aux = "sono" if correct_aux_lemma == "essere" and number == "Plur" else "è" if correct_aux_lemma == "essere" else "hanno" if number == "Plur" else "ha"
+        part = participle_token.text
+        if correct_aux_lemma == "essere":
+            part = self._inflect_italian(
+                participle_token.text,
+                participle_token.morph.get("Gender"),
+                participle_token.morph.get("Number"),
+                gender,
+                number,
+            ) or participle_token.text
+        return f"{self._preserve_case(aux_token.text, aux)} {part}"
+
+    def _suggest_subjunctive(self, verb) -> str:
+        """Small high-frequency indicative → subjunctive suggestion map."""
+        lower = verb.text.lower()
+        forms = {
+            "è": "sia", "sono": "siano", "sei": "sia", "siamo": "siamo", "siete": "siate",
+            "ha": "abbia", "hanno": "abbiano", "hai": "abbia", "abbiamo": "abbiamo", "avete": "abbiate",
+            "va": "vada", "vanno": "vadano", "fa": "faccia", "fanno": "facciano",
+            "può": "possa", "possono": "possano", "deve": "debba", "devono": "debbano",
+            "vuole": "voglia", "vogliono": "vogliano",
+        }
+        if lower in forms:
+            return self._preserve_case(verb.text, forms[lower])
+        if lower.endswith("a"):
+            return self._preserve_case(verb.text, lower[:-1] + "i")
+        if lower.endswith("e"):
+            return self._preserve_case(verb.text, lower[:-1] + "a")
+        if lower.endswith("ono"):
+            return self._preserve_case(verb.text, lower[:-3] + "ino")
+        return ""
+
+    def _normalise_suggestions(self, suggestions: list | None, fallback: str = "") -> list:
+        """Keep frontend output consistent: always return a clean suggestion list."""
+        clean = []
+        for suggestion in suggestions or []:
+            if suggestion and suggestion not in clean:
+                clean.append(suggestion)
+        if not clean and fallback:
+            clean.append(fallback)
+        return clean[:5]
+
     def get_match_value(self, match, *names, default=None):
-        """Safely extract an attribute from a LanguageTool match object."""
         for name in names:
             if hasattr(match, name):
                 return getattr(match, name)
         return default
 
     def classify_lt_issue(self, category: str, rule: str) -> str:
-        """Map LanguageTool category/rule identifiers to canonical issue types."""
         category = (category or "").upper()
         rule = (rule or "").upper()
-
         if category in ("PUNCTUATION", "TYPOGRAPHY", "CASING"):
             return "punctuation"
         if any(k in rule for k in ("COMMA", "APOSTROPHE", "WHITESPACE", "PUNCT")):
@@ -501,19 +516,7 @@ class GrammarCorrector:
             return "spelling"
         return "grammar"
 
-    def _issue(
-        self,
-        *,
-        text: str,
-        token,
-        rule: str,
-        message: str,
-        suggestions: list = None,
-    ) -> dict:
-        """
-        Build a standardised issue dictionary from a spaCy token and metadata.
-        Centralises the repeated boilerplate across all spaCy rules.
-        """
+    def _issue(self, *, text: str, token, rule: str, message: str, suggestions: list = None) -> dict:
         return {
             "source": "spaCy",
             "issue_type": "grammar",
@@ -524,141 +527,277 @@ class GrammarCorrector:
             "length": len(token.text),
             "wrong_text": token.text,
             "context": text[max(0, token.idx - 30): token.idx + 40],
-            "suggestions": suggestions or [],
+            "suggestions": self._normalise_suggestions(suggestions, fallback=token.text),
         }
 
-    # ------------------------------------------------------------------
-    # LanguageTool result parsing
-    # ------------------------------------------------------------------
+    def _is_past_participle(self, token) -> bool:
+        """Return True if the token is a past participle (VerbForm=Part, Tense=Past)."""
+        return (
+            "Part" in token.morph.get("VerbForm", [])
+            and "Past" in token.morph.get("Tense", [])
+        )
+
+    def _is_finite_verb(self, token) -> bool:
+        """Return True only for inflected finite verb forms (not participles, not infinitives)."""
+        verb_form = token.morph.get("VerbForm", [])
+        if not verb_form:
+            # spaCy sometimes omits VerbForm for clear finite forms; allow AUX/VERB with mood/tense
+            mood = token.morph.get("Mood", [])
+            tense = token.morph.get("Tense", [])
+            return bool(mood or tense)
+        return "Fin" in verb_form or (
+            "Part" not in verb_form
+            and "Inf" not in verb_form
+            and "Ger" not in verb_form
+        )
+
+    def _bare_prep(self, token_text: str) -> str:
+        """
+        Return the bare preposition for a token.
+        If it is a contracted form (al, del, nel…), return the preposition part.
+        Otherwise return the token text lowercased.
+        """
+        lower = token_text.lower()
+        return _CONTRACTED_BARE_PREP.get(lower, lower)
+    def _suggest_possessive(self, possessive: str, target_gender: list, target_number: list) -> str:
+        """Return the correct form of a possessive determiner."""
+        _POSSESSIVE_FORMS = {
+            # (lemma_base, gender, number) → correct form
+            ("mio",    "Masc", "Sing"): "mio",
+            ("mio",    "Fem",  "Sing"): "mia",
+            ("mio",    "Masc", "Plur"): "miei",
+            ("mio",    "Fem",  "Plur"): "mie",
+            ("tuo",    "Masc", "Sing"): "tuo",
+            ("tuo",    "Fem",  "Sing"): "tua",
+            ("tuo",    "Masc", "Plur"): "tuoi",
+            ("tuo",    "Fem",  "Plur"): "tue",
+            ("suo",    "Masc", "Sing"): "suo",
+            ("suo",    "Fem",  "Sing"): "sua",
+            ("suo",    "Masc", "Plur"): "suoi",
+            ("suo",    "Fem",  "Plur"): "sue",
+            ("nostro", "Masc", "Sing"): "nostro",
+            ("nostro", "Fem",  "Sing"): "nostra",
+            ("nostro", "Masc", "Plur"): "nostri",
+            ("nostro", "Fem",  "Plur"): "nostre",
+            ("vostro", "Masc", "Sing"): "vostro",
+            ("vostro", "Fem",  "Sing"): "vostra",
+            ("vostro", "Masc", "Plur"): "vostri",
+            ("vostro", "Fem",  "Plur"): "vostre",
+            ("loro",   "Masc", "Sing"): "loro",
+            ("loro",   "Fem",  "Sing"): "loro",
+            ("loro",   "Masc", "Plur"): "loro",
+            ("loro",   "Fem",  "Plur"): "loro",
+        }
+        lower = possessive.lower()
+        # Detect the lemma base from the surface form
+        base = None
+        if lower in ("mio", "mia", "miei", "mie"):
+            base = "mio"
+        elif lower in ("tuo", "tua", "tuoi", "tue"):
+            base = "tuo"
+        elif lower in ("suo", "sua", "suoi", "sue"):
+            base = "suo"
+        elif lower in ("nostro", "nostra", "nostri", "nostre"):
+            base = "nostro"
+        elif lower in ("vostro", "vostra", "vostri", "vostre"):
+            base = "vostro"
+        elif lower == "loro":
+            return "loro"
+
+        if base is None:
+            return ""
+
+        gender = target_gender[0] if target_gender else None
+        number = target_number[0] if target_number else None
+        if not gender or not number:
+            return ""
+
+        return _POSSESSIVE_FORMS.get((base, gender, number), "")
+
+
+    def _suggest_agreement_form(self, token, target_gender: list, target_number: list) -> str:
+        """
+        Try to find the correct inflected form of a determiner or adjective
+        by looking up all tokens in the doc that share the same lemma and
+            match the target gender/number.
+        """
+        if self.nlp is None:
+            return ""
+        target_g = target_gender[0] if target_gender else None
+        target_n = target_number[0] if target_number else None
+        if not target_g or not target_n:
+            return ""
+
+        # Search the spaCy vocab for a form matching lemma + target morph
+        lemma = token.lemma_.lower()
+        # Re-parse a small probe to find the right form
+        probe_map = {
+            # (lemma, gender, number) → suggested surface form
+            # Articles
+            ("il",  "Masc", "Sing"): "il",
+            ("il",  "Fem",  "Sing"): "la",
+            ("il",  "Masc", "Plur"): "i",
+            ("il",  "Fem",  "Plur"): "le",
+            ("un",  "Masc", "Sing"): "un",
+            ("un",  "Fem",  "Sing"): "una",
+            # Common determiners
+            ("questo", "Masc", "Sing"): "questo",
+            ("questo", "Fem",  "Sing"): "questa",
+            ("questo", "Masc", "Plur"): "questi",
+            ("questo", "Fem",  "Plur"): "queste",
+            ("quello", "Masc", "Sing"): "quello",
+            ("quello", "Fem",  "Sing"): "quella",
+            ("quello", "Masc", "Plur"): "quelli",
+            ("quello", "Fem",  "Plur"): "quelle",
+            ("bello",  "Masc", "Sing"): "bello",
+            ("bello",  "Fem",  "Sing"): "bella",
+            ("bello",  "Masc", "Plur"): "belli",
+            ("bello",  "Fem",  "Plur"): "belle",
+            ("buono",  "Masc", "Sing"): "buono",
+            ("buono",  "Fem",  "Sing"): "buona",
+            ("buono",  "Masc", "Plur"): "buoni",
+            ("buono",  "Fem",  "Plur"): "buone",
+            ("grande", "Masc", "Sing"): "grande",
+            ("grande", "Fem",  "Sing"): "grande",
+            ("grande", "Masc", "Plur"): "grandi",
+            ("grande", "Fem",  "Plur"): "grandi",
+        }
+        result = probe_map.get((lemma, target_g, target_n))
+        if result:
+            return result
+
+        # Generic Italian inflection fallback based on ending patterns
+        return self._inflect_italian(token.text, token.morph.get("Gender"), token.morph.get("Number"), target_g, target_n)
+
+
+    def _inflect_italian(self, word: str, src_gender: list, src_number: list, tgt_gender: str, tgt_number: str) -> str:
+        """
+        Simple rule-based Italian inflection for adjectives/determiners.
+        Covers the most common -o/-a/-i/-e paradigm.
+        """
+        if not word or not tgt_gender or not tgt_number:
+            return ""
+        w = word.lower()
+
+        # -o / -a / -i / -e paradigm (most Italian adjectives)
+        endings = {
+            ("Masc", "Sing"): "o",
+            ("Fem",  "Sing"): "a",
+            ("Masc", "Plur"): "i",
+            ("Fem",  "Plur"): "e",
+        }
+        target_ending = endings.get((tgt_gender, tgt_number))
+        if not target_ending:
+            return ""
+
+        # Strip current ending and attach target ending
+        for ending in ("e", "i", "a", "o"):
+            if w.endswith(ending):
+                stem = w[:-1]
+                result = stem + target_ending
+                # Preserve original capitalisation
+                if word[0].isupper():
+                    result = result.capitalize()
+                return result
+
+        return ""
 
     def parse_language_tool_matches(self, text: str, matches: list) -> list:
-        """
-        Transform raw LanguageTool match objects into a standardised list of
-        dictionaries, capping replacement suggestions at five per match.
-        """
         parsed = []
         for match in matches:
             offset = self.get_match_value(match, "offset", default=0)
-            length = self.get_match_value(
-                match, "errorLength", "error_length", default=0
-            )
+            length = self.get_match_value(match, "errorLength", "error_length", default=0)
             category = self.get_match_value(match, "category", default="")
             rule = self.get_match_value(match, "ruleId", "rule_id", default="")
-
-            parsed.append(
-                {
-                    "source": "LanguageTool",
-                    "issue_type": self.classify_lt_issue(category, rule),
-                    "message": self.get_match_value(match, "message", default=""),
-                    "rule": rule,
-                    "category": category,
-                    "offset": offset,
-                    "length": length,
-                    "wrong_text": text[offset: offset + length],
-                    "context": self.get_match_value(match, "context", default=""),
-                    "suggestions": self.get_match_value(
-                        match, "replacements", default=[]
-                    )[:5],
-                }
-            )
+            parsed.append({
+                "source": "LanguageTool",
+                "issue_type": self.classify_lt_issue(category, rule),
+                "message": self.get_match_value(match, "message", default=""),
+                "rule": rule,
+                "category": category,
+                "offset": offset,
+                "length": length,
+                "wrong_text": text[offset: offset + length],
+                "context": self.get_match_value(match, "context", default=""),
+                "suggestions": self.get_match_value(match, "replacements", default=[])[:5],
+            })
         return parsed
 
     # ------------------------------------------------------------------
-    # spaCy rule 1 – determiner / adjective ↔ noun agreement
+    # Rule 1 – determiner / adjective ↔ noun agreement (pre-nominal)
     # ------------------------------------------------------------------
 
     def spacy_noun_agreement_issues(self, text: str) -> list:
         """
         Detect gender/number mismatches between a pre-nominal determiner or
         adjective and its governing noun.
-
-        Examples:  ``qualche libri``,  ``bella ragazzo``
+        Skips possessives (handled by rule 3) and articles (handled by rule 5).
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
+            if token.dep_ not in ("det", "amod"):
+                continue
+            # Skip articles and possessives — dedicated rules handle them
+            if "Art" in token.morph.get("PronType", []):
+                continue
+            if token.dep_ == "det" and "Yes" in token.morph.get("Poss", []):
+                continue
             head = token.head
-            if token.dep_ in ("det", "amod") and head.pos_ in ("NOUN", "PROPN"):
-                t_gender = token.morph.get("Gender")
-                t_number = token.morph.get("Number")
-                h_gender = head.morph.get("Gender")
-                h_number = head.morph.get("Number")
-
-                mismatches = []
-                if t_gender and h_gender and t_gender != h_gender:
-                    mismatches.append("gender agreement")
-                if t_number and h_number and t_number != h_number:
-                    mismatches.append("number agreement")
-
-                if mismatches:
-                    issues.append(
-                        self._issue(
-                            text=text,
-                            token=token,
-                            rule="SPACY_NOUN_AGREEMENT",
-                            message=(
-                                f"Possible {' and '.join(mismatches)} issue: "
-                                f"'{token.text}' may not agree with '{head.text}'."
-                            ),
-                        )
-                    )
+            if head.pos_ not in ("NOUN", "PROPN"):
+                continue
+            # Only flag pre-nominal position
+            if token.i >= head.i:
+                continue
+            t_gender = token.morph.get("Gender")
+            t_number = token.morph.get("Number")
+            h_gender = head.morph.get("Gender")
+            h_number = head.morph.get("Number")
+            mismatches = []
+            if t_gender and h_gender and t_gender != h_gender:
+                mismatches.append("genere")
+            if t_number and h_number and t_number != h_number:
+                mismatches.append("numero")
+            if mismatches:
+                suggestion = self._suggest_agreement_form(token, h_gender, h_number)
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_NOUN_AGREEMENT",
+                    message=(
+                        f"Accordo di {' e '.join(mismatches)}: "
+                        f"'{token.text}' non concorda con '{head.text}'."
+                    ),
+                    suggestions=[suggestion] if suggestion else [],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 2 – subject–verb agreement
+    # Rule 2 – subject–verb agreement (finite forms only)
     # ------------------------------------------------------------------
 
     def spacy_subject_verb_issues(self, text: str) -> list:
         """
-        Detect number mismatches between a nominal subject and its finite verb
-        or auxiliary.
-
-        Handles three attachment patterns spaCy produces for Italian:
-
-        Pattern A – subject directly under the main VERB
-            ``Gli studenti va a scuola``
-            studenti -nsubj-> va(VERB)
-
-        Pattern B – subject under an AUX (compound tense)
-            ``Il professore hanno spiegato``
-            professore -nsubj-> hanno(AUX) -> spiegato(VERB)
-            The AUX is the finite inflected word; we flag it.
-
-        Pattern C – subject under AUX for essere-predicate
-            ``Alcuni studenti era interessati``
-            studenti -nsubj-> era(AUX/VERB)
-            The finite word is the AUX itself; we flag it directly.
-
-        In every pattern the finite inflected word (AUX or VERB) is the one
-        that must agree with the subject in number.
+        Detect number mismatches between a nominal subject and its FINITE verb.
+        Past participles are explicitly excluded — they agree with the subject
+        via rule 4, not here.
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-        seen_pairs = set()          # avoid duplicate flags for the same (subj, finite) pair
+        seen_pairs: set = set()
 
         for token in doc:
             if token.dep_ not in ("nsubj", "nsubj:pass"):
                 continue
-
             subj = token
-            head = token.head       # direct syntactic head (VERB or AUX)
-
-            # Collect candidate finite words to compare against the subject.
-            #   1. The direct head itself  (patterns A and C).
-            #   2. If head is AUX, walk up to its own head (the main VERB) and
-            #      also collect that verb's other AUX children  (pattern B).
+            head = token.head
             candidates = []
 
             if head.pos_ in ("VERB", "AUX"):
                 candidates.append(head)
-
             if head.pos_ == "AUX":
                 main_verb = head.head
                 if main_verb.pos_ in ("VERB", "AUX"):
@@ -668,6 +807,14 @@ class GrammarCorrector:
                         candidates.append(sibling)
 
             for finite in candidates:
+                # ✅ Skip past participles — not finite inflected forms
+                if self._is_past_participle(finite):
+                    continue
+                # ✅ Skip infinitives and gerunds
+                vf = finite.morph.get("VerbForm", [])
+                if "Inf" in vf or "Ger" in vf:
+                    continue
+
                 pair_key = (subj.i, finite.i)
                 if pair_key in seen_pairs:
                     continue
@@ -677,41 +824,28 @@ class GrammarCorrector:
 
                 if s_number and v_number and s_number != v_number:
                     seen_pairs.add(pair_key)
-                    issues.append(
-                        self._issue(
-                            text=text,
-                            token=finite,
-                            rule="SPACY_SUBJECT_VERB_AGREEMENT",
-                            message=(
-                                f"Possible subject-verb agreement error: "
-                                f"'{subj.text}' is {s_number[0]}, "
-                                f"but '{finite.text}' is {v_number[0]}."
-                            ),
-                        )
-                    )
-
+                    suggestion = self._suggest_finite_verb_number(finite, s_number)
+                    issues.append(self._issue(
+                        text=text, token=finite,
+                        rule="SPACY_SUBJECT_VERB_AGREEMENT",
+                        message=(
+                            f"Accordo soggetto-verbo: "
+                            f"'{subj.text}' è {s_number[0]}, "
+                            f"ma '{finite.text}' è {v_number[0]}."
+                        ),
+                        suggestions=[suggestion] if suggestion else [],
+                    ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 3 – possessive ↔ noun agreement  [NEW]
+    # Rule 3 – possessive ↔ noun agreement
     # ------------------------------------------------------------------
 
     def spacy_possessive_noun_issues(self, text: str) -> list:
-        """
-        Detect gender/number mismatches between a possessive pronoun/determiner
-        and its head noun.
-
-        Example:  ``nostri progetto``  (nostri=Masc,Plur  progetto=Masc,Sing)
-
-        spaCy labels possessives with dep_='det:poss' or pos_='DET' and the
-        morph feature Poss=Yes.
-        """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
             is_possessive = (
                 token.dep_ == "det:poss"
@@ -719,100 +853,88 @@ class GrammarCorrector:
             )
             if not is_possessive:
                 continue
-
             head = token.head
             if head.pos_ not in ("NOUN", "PROPN"):
                 continue
-
             t_gender = token.morph.get("Gender")
             t_number = token.morph.get("Number")
             h_gender = head.morph.get("Gender")
             h_number = head.morph.get("Number")
-
             mismatches = []
             if t_gender and h_gender and t_gender != h_gender:
-                mismatches.append("gender")
+                mismatches.append("genere")
             if t_number and h_number and t_number != h_number:
-                mismatches.append("number")
-
+                mismatches.append("numero")
             if mismatches:
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_POSSESSIVE_NOUN_AGREEMENT",
-                        message=(
-                            f"Possessive–noun {' and '.join(mismatches)} mismatch: "
-                            f"'{token.text}' does not agree with '{head.text}'. "
-                            f"(e.g. 'nostri progetto' → 'nostro progetto')"
-                        ),
-                    )
-                )
+                suggestion = self._suggest_possessive(token.text, h_gender, h_number)
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_POSSESSIVE_NOUN_AGREEMENT",
+                    message=(
+                        f"Accordo possessivo-nome ({' e '.join(mismatches)}): "
+                        f"'{token.text}' non concorda con '{head.text}'. "
+                        f"(es. 'nostri progetto' → 'nostro progetto')"
+                    ),
+                    suggestions=[suggestion] if suggestion else [],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 4 – auxiliary ↔ past-participle agreement  [NEW]
+    # Rule 4 – auxiliary ↔ past-participle agreement (essere only)
     # ------------------------------------------------------------------
 
     def spacy_aux_participle_issues(self, text: str) -> list:
         """
-        Detect gender/number mismatches between an *essere*-auxiliary and its
-        past participle in compound tenses.
-
-        Italian rule: when the auxiliary is *essere*, the past participle must
-        agree in gender and number with the subject.
-
-        Example:  ``siamo tornato``  (noi=Masc,Plur  tornato=Masc,Sing)
-
-        Detection strategy
-        ------------------
-        1. Find VERB tokens whose VerbForm=Part (past participle).
-        2. Check whether any AUX sibling (same head) is a form of *essere*.
-        3. Find the clause's nominal subject.
-        4. Compare subject morph with participle morph.
+        When the auxiliary is essere, the past participle must agree with
+        the subject in gender and number.
+        Dual-auxiliary verbs (correre, passare…) are only flagged when
+        the auxiliary actually is essere (not avere).
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
 
         for token in doc:
-            # Target: past participles
-            if not (
-                token.pos_ == "VERB"
-                and "Part" in token.morph.get("VerbForm", [])
-            ):
+            if not self._is_past_participle(token):
+                continue
+            # Skip "stato/stata/stati/state" — these are copula participles
+            if token.lemma_.lower() in ("essere", "stare") or token.text.lower() in _ESSERE_STARE_PARTICIPLES:
                 continue
 
-            # Find an essere-auxiliary in the same clause
+            # Find an essere auxiliary in the same clause
             aux_essere = None
             for child in token.children:
-                if child.dep_ == "aux" and child.lemma_.lower() in (
-                    "essere", "venire"
-                ):
+                if child.dep_ == "aux" and child.lemma_.lower() in ("essere", "venire"):
                     aux_essere = child
                     break
-            # Also check if the participle's head is an essere auxiliary
             if aux_essere is None and token.head.lemma_.lower() in ("essere", "venire"):
                 aux_essere = token.head
-
             if aux_essere is None:
                 continue
 
-            # Find the subject of this predicate
+            # For dual-auxiliary verbs, only flag when the aux IS essere
+            # (if avere is also present, skip — transitivity makes avere correct)
+            verb_lemma = token.lemma_.lower()
+            if verb_lemma in _DUAL_AUXILIARY_VERBS:
+                has_avere = any(
+                    c.dep_ == "aux" and c.lemma_.lower() == "avere"
+                    for c in token.children
+                )
+                if has_avere:
+                    continue
+
+            # Find the subject
             subject = None
             for child in token.children:
                 if child.dep_ in ("nsubj", "nsubj:pass"):
                     subject = child
                     break
-            # Subject might hang off the auxiliary instead
             if subject is None:
                 for child in aux_essere.children:
                     if child.dep_ in ("nsubj", "nsubj:pass"):
                         subject = child
                         break
-
             if subject is None:
                 continue
 
@@ -823,300 +945,203 @@ class GrammarCorrector:
 
             mismatches = []
             if s_gender and p_gender and s_gender != p_gender:
-                mismatches.append("gender")
+                mismatches.append("genere")
             if s_number and p_number and s_number != p_number:
-                mismatches.append("number")
+                mismatches.append("numero")
 
             if mismatches:
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_AUX_PARTICIPLE_AGREEMENT",
-                        message=(
-                            f"Auxiliary–participle {' and '.join(mismatches)} mismatch: "
-                            f"subject '{subject.text}' is "
-                            f"{', '.join(s_gender + s_number)}, but participle "
-                            f"'{token.text}' is {', '.join(p_gender + p_number)}. "
-                            f"(e.g. 'siamo tornato' → 'siamo tornati')"
-                        ),
-                    )
-                )
+                suggestion = self._inflect_italian(token.text, token.morph.get("Gender"), token.morph.get("Number"), s_gender[0] if s_gender else None, s_number[0] if s_number else None)
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_AUX_PARTICIPLE_AGREEMENT",
+                    message=(
+                        f"Accordo ausiliare-participio ({' e '.join(mismatches)}): "
+                        f"soggetto '{subject.text}' è "
+                        f"{', '.join(s_gender + s_number)}, ma participio "
+                        f"'{token.text}' è {', '.join(p_gender + p_number)}. "
+                        f"(es. 'siamo tornato' → 'siamo tornati')"
+                    ),
+                    suggestions=[suggestion] if suggestion else [],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 5 – article ↔ noun agreement  [NEW]
+    # Rule 5 – article ↔ noun agreement
     # ------------------------------------------------------------------
 
     def spacy_article_noun_issues(self, text: str) -> list:
-        """
-        Detect mismatches between a definite/indefinite article and its noun.
-
-        Covers:
-        • Gender mismatch  →  ``un ragazza`` (un=Masc, ragazza=Fem)
-        • Exception nouns  →  ``la problema`` (problema is Masc despite -a ending)
-
-        Strategy: look for DET tokens with PronType=Art and compare morph with
-        their head noun, cross-referencing the exception dictionaries above.
-        """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
-            if not (
-                token.pos_ == "DET"
-                and "Art" in token.morph.get("PronType", [])
-            ):
+            if not (token.pos_ == "DET" and "Art" in token.morph.get("PronType", [])):
                 continue
-
             head = token.head
             if head.pos_ not in ("NOUN", "PROPN"):
                 continue
-
             t_gender = token.morph.get("Gender")
-            t_number = token.morph.get("Number")
             h_gender = head.morph.get("Gender")
+            t_number = token.morph.get("Number")
             h_number = head.morph.get("Number")
-
             mismatches = []
-
-            # Check exception nouns where the model might parse gender wrongly
             lemma = head.lemma_.lower()
             if lemma in _MASCULINE_NOUNS and t_gender == ["Fem"]:
-                mismatches.append("gender (noun is masculine despite -a ending)")
+                mismatches.append("genere (nome maschile con articolo femminile)")
             elif lemma in _FEMININE_NOUNS and t_gender == ["Masc"]:
-                mismatches.append("gender (noun is feminine despite appearance)")
+                mismatches.append("genere (nome femminile con articolo maschile)")
             else:
                 if t_gender and h_gender and t_gender != h_gender:
-                    mismatches.append("gender")
+                    mismatches.append("genere")
                 if t_number and h_number and t_number != h_number:
-                    mismatches.append("number")
-
+                    mismatches.append("numero")
             if mismatches:
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_ARTICLE_NOUN_AGREEMENT",
-                        message=(
-                            f"Article–noun {' and '.join(mismatches)} mismatch: "
-                            f"'{token.text}' does not agree with '{head.text}'. "
-                            f"(e.g. 'un ragazza' → 'una ragazza', "
-                            f"'la problema' → 'il problema')"
-                        ),
-                    )
-                )
+                suggestion = self._suggest_article_for_noun(token, head) or self._suggest_agreement_form(token, h_gender, h_number)
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_ARTICLE_NOUN_AGREEMENT",
+                    message=(
+                        f"Accordo articolo-nome ({' e '.join(mismatches)}): "
+                        f"'{token.text}' non concorda con '{head.text}'. "
+                        f"(es. 'un ragazza' → 'una ragazza', 'la problema' → 'il problema')"
+                    ),
+                    suggestions=[suggestion] if suggestion else [],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 6 – post-nominal adjective agreement  [NEW]
+    # Rule 6 – post-nominal adjective agreement
     # ------------------------------------------------------------------
 
     def spacy_postnominal_adjective_issues(self, text: str) -> list:
-        """
-        Detect gender/number mismatches for adjectives that follow their noun
-        (post-nominal position).
-
-        Examples:
-            ``case grande``   →  ``case grandi``
-            ``problemi complesso``  →  ``problemi complessi``
-
-        spaCy marks these as amod with the adjective appearing *after* the noun
-        in the token sequence (token.i > head.i).
-        """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
-            if not (
-                token.dep_ == "amod"
-                and token.head.pos_ in ("NOUN", "PROPN")
-                and token.i > token.head.i          # adjective comes after noun
-            ):
+            if not (token.dep_ == "amod" and token.head.pos_ in ("NOUN", "PROPN") and token.i > token.head.i):
                 continue
-
             head = token.head
             t_gender = token.morph.get("Gender")
             t_number = token.morph.get("Number")
             h_gender = head.morph.get("Gender")
             h_number = head.morph.get("Number")
-
             mismatches = []
             if t_gender and h_gender and t_gender != h_gender:
-                mismatches.append("gender")
+                mismatches.append("genere")
             if t_number and h_number and t_number != h_number:
-                mismatches.append("number")
-
+                mismatches.append("numero")
             if mismatches:
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_POSTNOMINAL_ADJ_AGREEMENT",
-                        message=(
-                            f"Post-nominal adjective {' and '.join(mismatches)} "
-                            f"mismatch: '{token.text}' does not agree with "
-                            f"'{head.text}'. "
-                            f"(e.g. 'case grande' → 'case grandi')"
-                        ),
-                    )
-                )
+                suggestion = self._inflect_italian(token.text, token.morph.get("Gender"), token.morph.get("Number"), h_gender[0] if h_gender else None, h_number[0] if h_number else None)
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_POSTNOMINAL_ADJ_AGREEMENT",
+                    message=(
+                        f"Accordo aggettivo-nome ({' e '.join(mismatches)}): "
+                        f"'{token.text}' non concorda con '{head.text}'. "
+                        f"(es. 'case grande' → 'case grandi')"
+                    ),
+                    suggestions=[suggestion] if suggestion else [],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 7 – preposition contraction errors  [NEW]
+    # Rule 7 – preposition contraction errors
     # ------------------------------------------------------------------
 
     def spacy_preposition_contraction_issues(self, text: str) -> list:
         """
-        Detect places where a preposition + article should be written as a
-        contracted articulated preposition (preposizione articolata) but is not.
-
-        Example:  ``di il libro``  →  should be  ``del libro``
-
-        Detection: walk the token list looking for a preposition immediately
-        followed by an article where the contracted form is known.
+        Flag bare PREP + ART sequences that should be written as a
+        contracted articulated preposition.
+        Only flags when the preposition and article are separate tokens
+        and a known contracted form exists.
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
         tokens = list(doc)
-
         for i, token in enumerate(tokens[:-1]):
             next_tok = tokens[i + 1]
-
             prep = token.text.lower()
             art = next_tok.text.lower()
-
+            # Only flag if this is actually a preposition token
+            if token.pos_ not in ("ADP",):
+                continue
             contracted = _PREP_ARTICLE_CONTRACTIONS.get((prep, art))
             if contracted is None:
                 continue
-
-            # If they are syntactically related (prep → det or prep → head of det)
-            # we flag the pair.
-            issues.append(
-                self._issue(
-                    text=text,
-                    token=token,
-                    rule="SPACY_PREP_CONTRACTION",
-                    message=(
-                        f"Preposition + article should be contracted: "
-                        f"'{token.text} {next_tok.text}' → '{contracted}'."
-                    ),
-                    suggestions=[contracted],
-                )
-            )
+            # Skip if already immediately followed by the contracted form in text
+            issues.append(self._issue(
+                text=text, token=token,
+                rule="SPACY_PREP_CONTRACTION",
+                message=(
+                    f"Preposizione articolata mancante: "
+                    f"'{token.text} {next_tok.text}' → '{contracted}'."
+                ),
+                suggestions=[contracted],
+            ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 8 – verb–preposition collocation errors  [NEW]
+    # Rule 8 – verb–preposition collocation
     # ------------------------------------------------------------------
 
     def spacy_verb_preposition_issues(self, text: str) -> list:
         """
-        Detect verbs used with a wrong preposition based on known collocation
-        rules.
-
-        Examples:
-            ``vado in casa``  →  ``vado a casa``
-            ``pensare su qualcosa``  →  ``pensare a qualcosa``
-
-        Strategy: find verbs whose lemma is in ``_VERB_PREP_RULES``, then look
-        at their prepositional children (dep_='obl' or 'nmod') and check the
-        governing preposition token.
+        Detect verbs used with a wrong preposition.
+        Contracted forms (al, del, nel…) are decomposed to their bare
+        preposition before checking, so 'andato al meeting' is NOT flagged.
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
             if token.pos_ not in ("VERB", "AUX"):
                 continue
-
             rule_entry = _VERB_PREP_RULES.get(token.lemma_.lower())
             if rule_entry is None:
                 continue
-
             expected_prep = rule_entry["expected"]
             wrong_preps = rule_entry["wrong"]
             note = rule_entry.get("note", "")
-
             for child in token.children:
                 if child.dep_ not in ("obl", "obl:agent", "nmod", "advmod"):
                     continue
-                # The preposition is the 'case' child of the oblique
                 for grandchild in child.children:
                     if grandchild.dep_ == "case" and grandchild.pos_ == "ADP":
-                        used_prep = grandchild.text.lower()
-                        if used_prep in wrong_preps:
-                            issues.append(
-                                self._issue(
-                                    text=text,
-                                    token=grandchild,
-                                    rule="SPACY_VERB_PREP_COLLOCATION",
-                                    message=(
-                                        f"Wrong preposition after '{token.text}': "
-                                        f"used '{used_prep}', expected "
-                                        f"'{expected_prep}'. {note}"
-                                    ),
-                                    suggestions=[expected_prep],
-                                )
-                            )
+                        # ✅ Decompose contracted forms before checking
+                        bare = self._bare_prep(grandchild.text)
+                        if bare in wrong_preps:
+                            issues.append(self._issue(
+                                text=text, token=grandchild,
+                                rule="SPACY_VERB_PREP_COLLOCATION",
+                                message=(
+                                    f"Preposizione errata dopo '{token.text}': "
+                                    f"usato '{grandchild.text}', atteso '{expected_prep}'. {note}"
+                                ),
+                                suggestions=[expected_prep],
+                            ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 9 – predicate adjective agreement  [NEW]
+    # Rule 9 – predicate adjective agreement
     # ------------------------------------------------------------------
 
     def spacy_predicate_adjective_issues(self, text: str) -> list:
-        """
-        Detect gender/number mismatches between the subject and a predicate
-        adjective linked by a copular verb (essere, sembrare, diventare, …).
-
-        Example:  ``Lei era molto simpatico``
-            Lei  → Fem,Sing
-            simpatico → Masc,Sing  ✗  should be  simpatica
-
-        spaCy Italian uses TWO different parse structures for this construction
-        depending on the model version and sentence complexity — we handle both:
-
-        Pattern A  (verb-headed):
-            era(AUX/VERB, ROOT) ← simpatico(ADJ, dep="attr")
-            era ← Lei(PRON, dep="nsubj")
-            → head of ADJ is a copular verb: check head.lemma_ ∈ _COPULAR_VERBS
-
-        Pattern B  (adjective-headed / copula-as-child):
-            simpatico(ADJ, ROOT) ← era(AUX, dep="cop")
-            simpatico ← Lei(PRON, dep="nsubj")
-            → ADJ is ROOT and has a "cop" child whose lemma ∈ _COPULAR_VERBS
-        """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
             if token.pos_ != "ADJ":
                 continue
-
             head = token.head
             subject = None
             is_predicate_adj = False
 
-            # ----------------------------------------------------------
-            # Pattern A: ADJ head is a copular VERB/AUX
-            # ----------------------------------------------------------
+            # Pattern A: head is a copular verb
             if head.pos_ in ("VERB", "AUX") and head.lemma_.lower() in _COPULAR_VERBS:
                 is_predicate_adj = True
                 for child in head.children:
@@ -1124,9 +1149,7 @@ class GrammarCorrector:
                         subject = child
                         break
 
-            # ----------------------------------------------------------
-            # Pattern B: ADJ is ROOT (or high node) with a "cop" child
-            # ----------------------------------------------------------
+            # Pattern B: ADJ is root with cop child
             if not is_predicate_adj:
                 cop_child = None
                 for child in token.children:
@@ -1135,7 +1158,6 @@ class GrammarCorrector:
                         break
                 if cop_child is not None:
                     is_predicate_adj = True
-                    # Subject is a direct child of the ADJ in this pattern
                     for child in token.children:
                         if child.dep_ in ("nsubj", "nsubj:pass"):
                             subject = child
@@ -1151,55 +1173,40 @@ class GrammarCorrector:
 
             mismatches = []
             if s_gender and a_gender and s_gender != a_gender:
-                mismatches.append("gender")
+                mismatches.append("genere")
             if s_number and a_number and s_number != a_number:
-                mismatches.append("number")
+                mismatches.append("numero")
 
             if mismatches:
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_PREDICATE_ADJ_AGREEMENT",
-                        message=(
-                            f"Predicate adjective {' and '.join(mismatches)} mismatch: "
-                            f"subject '{subject.text}' is "
-                            f"{', '.join(s_gender + s_number)}, but "
-                            f"'{token.text}' is {', '.join(a_gender + a_number)}. "
-                            f"(e.g. 'Lei era simpatico' → 'Lei era simpatica')"
-                        ),
-                    )
-                )
+                suggestion = self._inflect_italian(token.text, token.morph.get("Gender"), token.morph.get("Number"), s_gender[0] if s_gender else None, s_number[0] if s_number else None)
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_PREDICATE_ADJ_AGREEMENT",
+                    message=(
+                        f"Accordo aggettivo predicativo ({' e '.join(mismatches)}): "
+                        f"soggetto '{subject.text}' è {', '.join(s_gender + s_number)}, "
+                        f"ma '{token.text}' è {', '.join(a_gender + a_number)}. "
+                        f"(es. 'Lei era simpatico' → 'Lei era simpatica')"
+                    ),
+                    suggestions=[suggestion] if suggestion else [],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 10 – clitic pronoun–verb agreement  [NEW]
+    # Rule 10 – clitic elision before vowel-initial verb
     # ------------------------------------------------------------------
 
     def spacy_clitic_agreement_issues(self, text: str) -> list:
         """
-        Detect the most common clitic elision error: ``lo ho`` / ``la ho``
-        should contract to ``l'ho`` before a vowel-initial auxiliary.
-
-        Also flags ``lo`` / ``la`` used before a vowel-starting verb where
-        elision (l') is obligatory in standard Italian.
-
-        spaCy tags clitics as PRON with dep_='obj' or 'expl' and the morph
-        feature Clitic=Yes.
-
-        Limitations: full clitic-climbing and agreement with past participle
-        (e.g. ``le ho viste``) require richer context; those are approximated
-        here via a simpler surface check.
+        Flag 'lo'/'la' that should be elided to 'l'' before a vowel-starting
+        auxiliary or verb.
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
         tokens = list(doc)
-
         for i, token in enumerate(tokens[:-1]):
-            # Look for bare "lo" / "la" immediately before a vowel-starting verb
             if token.text.lower() not in ("lo", "la"):
                 continue
             next_tok = tokens[i + 1]
@@ -1207,79 +1214,53 @@ class GrammarCorrector:
                 continue
             next_lower = next_tok.text.lower()
             if next_lower and next_lower[0] in "aeiouàèéìòù":
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_CLITIC_ELISION",
-                        message=(
-                            f"Clitic '{token.text}' should be elided before "
-                            f"'{next_tok.text}' (starts with a vowel): "
-                            f"'{token.text} {next_tok.text}' → "
-                            f"'l'{next_tok.text}'."
-                        ),
-                        suggestions=[f"l'{next_tok.text}"],
-                    )
-                )
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_CLITIC_ELISION",
+                    message=(
+                        f"Il clitico '{token.text}' deve essere eliso prima di "
+                        f"'{next_tok.text}' (inizia per vocale): "
+                        f"'{token.text} {next_tok.text}' → 'l'{next_tok.text}'."
+                    ),
+                    suggestions=[f"l'{next_tok.text}"],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 11 – partitive article misuse  [NEW]
+    # Rule 11 – partitive article misuse
     # ------------------------------------------------------------------
 
     def spacy_partitive_article_issues(self, text: str) -> list:
-        """
-        Detect gender/number mismatches in partitive articles
-        (del / dello / della / dei / degli / delle).
-
-        Example:  ``Ho mangiato del mele``
-            mele → Fem,Plur  but  del → Masc,Sing  ✗  should be  delle mele
-
-        Detection: find DET tokens that are contracted partitive forms
-        (recognised via _CONTRACTED_TO_PARTS), decompose them into their
-        prep + article components, derive the article's implied gender/number,
-        and compare with the head noun.
-        """
-        if self.nlp is None:
-            return []
-
-        # Map contracted partitive → (gender, number) implied by the article part
         _PARTITIVE_MORPH = {
             "del":   ("Masc", "Sing"),
-            "dello": ("Masc", "Sing"),   # before s+cons, z, gn…
+            "dello": ("Masc", "Sing"),
             "della": ("Fem",  "Sing"),
             "dei":   ("Masc", "Plur"),
             "degli": ("Masc", "Plur"),
             "delle": ("Fem",  "Plur"),
-            "dell'": (None,   "Sing"),   # elided; gender ambiguous
         }
-
+        if self.nlp is None:
+            return []
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
             if token.pos_ != "DET":
                 continue
             lower = token.text.lower()
             if lower not in _PARTITIVE_MORPH:
                 continue
-
             head = token.head
             if head.pos_ not in ("NOUN", "PROPN"):
                 continue
-
             art_gender, art_number = _PARTITIVE_MORPH[lower]
             h_gender = head.morph.get("Gender")
             h_number = head.morph.get("Number")
-
             mismatches = []
-            if art_gender and h_gender and [art_gender] != h_gender:
-                mismatches.append("gender")
-            if art_number and h_number and [art_number] != h_number:
-                mismatches.append("number")
-
+            if h_gender and [art_gender] != h_gender:
+                mismatches.append("genere")
+            if h_number and [art_number] != h_number:
+                mismatches.append("numero")
             if mismatches:
-                # Suggest the correct partitive form
                 target_gender = h_gender[0] if h_gender else "?"
                 target_number = h_number[0] if h_number else "?"
                 correct_map = {
@@ -1289,73 +1270,49 @@ class GrammarCorrector:
                     ("Fem",  "Plur"): "delle",
                 }
                 suggestion = correct_map.get((target_gender, target_number), "?")
-                issues.append(
-                    self._issue(
-                        text=text,
-                        token=token,
-                        rule="SPACY_PARTITIVE_AGREEMENT",
-                        message=(
-                            f"Partitive article {' and '.join(mismatches)} mismatch: "
-                            f"'{token.text}' does not agree with '{head.text}' "
-                            f"({target_gender},{target_number}). "
-                            f"Use '{suggestion}' instead. "
-                            f"(e.g. 'del mele' → 'delle mele')"
-                        ),
-                        suggestions=[suggestion],
-                    )
-                )
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_PARTITIVE_AGREEMENT",
+                    message=(
+                        f"Articolo partitivo errato ({' e '.join(mismatches)}): "
+                        f"'{token.text}' non concorda con '{head.text}'. "
+                        f"Usa '{suggestion}'. (es. 'del mele' → 'delle mele')"
+                    ),
+                    suggestions=[suggestion],
+                ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 12 – missing reflexive clitic  [NEW]
+    # Rule 12 – missing reflexive clitic
     # ------------------------------------------------------------------
 
     def spacy_missing_reflexive_clitic(self, text: str) -> list:
         """
-        Detect verbs that are inherently reflexive in Italian but appear
-        without their required clitic pronoun (mi/ti/si/ci/vi).
-
-        Example:  ``Mario lava ogni mattina``
-            'lavare' used intransitively without 'si' → likely 'lavarsi'.
-
-        Detection heuristic
-        -------------------
-        If a verb's lemma is in _REFLEXIVE_LEMMA_MAP AND it has no direct
-        object (obj) AND no clitic child with Clitic=Yes, it is probably
-        missing its reflexive clitic.
-
-        Note: this produces false positives when the verb is used
-        transitively with an explicit object (``lava i piatti``); we suppress
-        the flag in that case.
+        Flag verbs that require a reflexive clitic but appear without one
+        AND without a direct object (transitive use is fine).
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
             if token.pos_ not in ("VERB", "AUX"):
                 continue
-
             reflexive_form = _REFLEXIVE_LEMMA_MAP.get(token.lemma_.lower())
             if reflexive_form is None:
                 continue
-
-            # Suppress if there is an explicit direct object → transitive use
+            # Suppress if there is a direct object → transitive use
             has_obj = any(c.dep_ in ("obj", "iobj") for c in token.children)
             if has_obj:
                 continue
-
-            # Suppress if a clitic is already present
+            # Suppress if clitic present as child
             has_clitic = any(
                 c.pos_ == "PRON" and "Yes" in c.morph.get("Clitic", [])
                 for c in token.children
             )
             if has_clitic:
                 continue
-
-            # Also check left-side clitics (they often precede the verb in text)
+            # Suppress if clitic present in left window
             idx = token.i
             left_window = doc[max(0, idx - 2): idx]
             has_left_clitic = any(
@@ -1364,182 +1321,119 @@ class GrammarCorrector:
             )
             if has_left_clitic:
                 continue
-
-            issues.append(
-                self._issue(
-                    text=text,
-                    token=token,
-                    rule="SPACY_MISSING_REFLEXIVE_CLITIC",
-                    message=(
-                        f"'{token.text}' may be missing its reflexive clitic. "
-                        f"Did you mean the reflexive form '{reflexive_form}'? "
-                        f"(e.g. 'Mario lava ogni mattina' → 'Mario si lava ogni mattina')"
-                    ),
-                    suggestions=[reflexive_form],
-                )
-            )
+            issues.append(self._issue(
+                text=text, token=token,
+                rule="SPACY_MISSING_REFLEXIVE_CLITIC",
+                message=(
+                    f"'{token.text}' potrebbe mancare del clitico riflessivo. "
+                    f"Intendevi la forma riflessiva '{reflexive_form}'? "
+                    f"(es. 'Mario lava ogni mattina' → 'Mario si lava ogni mattina')"
+                ),
+                suggestions=[f"si {token.text}"],
+            ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 13 – double negation errors  [NEW]
+    # Rule 13 – double negation / missing 'non'
     # ------------------------------------------------------------------
 
     def spacy_double_negation_issues(self, text: str) -> list:
         """
-        Detect missing 'non' when a negative polarity item (niente, nessuno,
-        mai, …) is present but the finite verb has no negation marker.
-
-        Italian requires concordance negation: both 'non' before the verb AND
-        the NPI are needed.
-
-        Correct:   ``Non ho visto niente.``
-        Wrong:     ``Ho visto niente.``
-
-        Detection
-        ---------
-        For each sentence, find finite verbs. If a NPI token is present in
-        the clause but no 'non' / 'né' neg-marker child exists on the verb,
-        flag it.
+        Flag sentences where a negative polarity item (niente, mai…) is
+        present but the finite verb has no preceding 'non'.
         """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for sent in doc.sents:
             tokens = list(sent)
             token_texts_lower = {t.text.lower() for t in tokens}
-
-            # Check whether any NPI appears in this sentence
             npis_present = token_texts_lower & _NEGATIVE_POLARITY_WORDS
             if not npis_present:
                 continue
-
             for token in tokens:
                 if token.pos_ not in ("VERB", "AUX"):
                     continue
-                # Check for negation marker as a child (dep_='advmod' text 'non')
+                if not self._is_finite_verb(token):
+                    continue
                 has_neg = any(
                     c.dep_ == "advmod" and c.text.lower() in ("non", "né", "ne")
                     for c in token.children
                 )
-                # Also check immediately preceding tokens (clitics + non often precede)
                 idx = token.i
                 left = doc[max(0, idx - 3): idx]
                 has_neg = has_neg or any(t.text.lower() == "non" for t in left)
-
                 if not has_neg:
                     npi_sample = next(iter(npis_present))
-                    issues.append(
-                        self._issue(
-                            text=text,
-                            token=token,
-                            rule="SPACY_DOUBLE_NEGATION",
-                            message=(
-                                f"Negative polarity word '{npi_sample}' found but "
-                                f"'non' is missing before '{token.text}'. "
-                                f"Italian requires concordance negation: "
-                                f"'non … {npi_sample}'. "
-                                f"(e.g. 'Ho visto niente' → 'Non ho visto niente')"
-                            ),
-                            suggestions=["non " + token.text],
-                        )
-                    )
-                    break   # one flag per sentence is enough
+                    issues.append(self._issue(
+                        text=text, token=token,
+                        rule="SPACY_DOUBLE_NEGATION",
+                        message=(
+                            f"Parola di polarità negativa '{npi_sample}' presente "
+                            f"ma manca 'non' prima di '{token.text}'. "
+                            f"L'italiano richiede la negazione concordata: 'non … {npi_sample}'. "
+                            f"(es. 'Ho visto niente' → 'Non ho visto niente')"
+                        ),
+                        suggestions=["non " + token.text],
+                    ))
+                    break
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 14 – interrogative word order  [NEW]
+    # Rule 14 – interrogative word order
     # ------------------------------------------------------------------
 
     def spacy_interrogative_word_order_issues(self, text: str) -> list:
         """
-        Detect subject-before-verb word order after a WH-word in Italian
-        questions, which is ungrammatical (unlike English).
-
-        Wrong:   ``Cosa tu fai?``   (subject 'tu' sits between WH and verb)
-        Correct: ``Cosa fai?``  or  ``Cosa fai tu?``  (subject after verb)
-
-        Detection heuristic
-        -------------------
-        In a sentence ending with '?', if a WH-word appears and is
-        immediately (within 2 tokens) followed by a personal pronoun subject
-        before the finite verb, flag the pronoun.
+        In Italian questions the subject pronoun must NOT appear between
+        the WH-word and the verb.
         """
         if self.nlp is None:
             return []
-
         _SUBJECT_PRONOUNS = {
-            "io", "tu", "lui", "lei", "noi", "voi", "loro", "esso", "essa",
-            "essi", "esse",
+            "io", "tu", "lui", "lei", "noi", "voi", "loro",
+            "esso", "essa", "essi", "esse",
         }
-
         issues = []
         doc = self.nlp(text)
-
         for sent in doc.sents:
-            sent_text = sent.text.strip()
-            if not sent_text.endswith("?"):
+            if not sent.text.strip().endswith("?"):
                 continue
-
             tokens = list(sent)
             for i, token in enumerate(tokens):
                 if token.text.lower() not in _WH_WORDS:
                     continue
-
-                # Scan the next 1–3 tokens for a subject pronoun before a verb
                 window = tokens[i + 1: i + 4]
                 for j, w in enumerate(window):
                     if w.text.lower() in _SUBJECT_PRONOUNS and w.dep_ in ("nsubj", "nsubj:pass"):
-                        # Check that the verb comes after this pronoun
                         remaining = window[j + 1:]
                         verb_after = any(t.pos_ in ("VERB", "AUX") for t in remaining)
                         if verb_after or j == 0:
-                            issues.append(
-                                self._issue(
-                                    text=text,
-                                    token=w,
-                                    rule="SPACY_INTERROGATIVE_WORD_ORDER",
-                                    message=(
-                                        f"In Italian questions the subject pronoun "
-                                        f"'{w.text}' should not appear between the "
-                                        f"WH-word '{token.text}' and the verb. "
-                                        f"Drop it or move it after the verb. "
-                                        f"(e.g. 'Cosa tu fai?' → 'Cosa fai?' "
-                                        f"or 'Cosa fai tu?')"
-                                    ),
-                                )
-                            )
+                            
+                            issues.append(self._issue(
+                                text=text, token=w,
+                                rule="SPACY_INTERROGATIVE_WORD_ORDER",
+                                message=(
+                                    f"Nelle domande italiane il pronome soggetto "
+                                    f"'{w.text}' non dovrebbe stare tra '{token.text}' e il verbo. "
+                                    f"Eliminarlo o spostarlo dopo il verbo. "
+                                    f"(es. 'Cosa tu fai?' → 'Cosa fai?' o 'Cosa fai tu?')"
+                                ),
+                               
+                            ))
                             break
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 15 – gerund subject mismatch  [NEW]
+    # Rule 15 – gerund subject mismatch
     # ------------------------------------------------------------------
 
     def spacy_gerund_subject_mismatch(self, text: str) -> list:
-        """
-        Detect gender mismatches between the implied subject of a gerund/
-        participial clause (essendo, avendo, …) and the subject of the main
-        clause.
-
-        Wrong:   ``Essendo stanca, lui uscì di casa.``
-            Gerund adjective 'stanca' is Fem but main subject 'lui' is Masc.
-        Correct: ``Essendo stanco, lui uscì di casa.``
-
-        Detection
-        ---------
-        Find ADJ tokens that are children of a gerund verb (VerbForm=Ger).
-        Find the main clause subject (nsubj of the root verb). Compare gender.
-        """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
-        # Find root subject (the main clause subject)
         root_subject = None
         for token in doc:
             if token.dep_ == "ROOT":
@@ -1548,104 +1442,241 @@ class GrammarCorrector:
                         root_subject = child
                         break
                 break
-
         if root_subject is None:
             return []
-
         s_gender = root_subject.morph.get("Gender")
         s_number = root_subject.morph.get("Number")
-
         for token in doc:
-            # Find gerund verbs
-            if not ("Ger" in token.morph.get("VerbForm", [])):
+            if "Ger" not in token.morph.get("VerbForm", []):
                 continue
-
-            # Look for adjective children of the gerund (predicate adjectives)
             for child in token.children:
                 if child.pos_ != "ADJ":
                     continue
-
                 a_gender = child.morph.get("Gender")
                 a_number = child.morph.get("Number")
-
                 mismatches = []
                 if s_gender and a_gender and s_gender != a_gender:
-                    mismatches.append("gender")
+                    mismatches.append("genere")
                 if s_number and a_number and s_number != a_number:
-                    mismatches.append("number")
-
+                    mismatches.append("numero")
                 if mismatches:
-                    issues.append(
-                        self._issue(
-                            text=text,
-                            token=child,
-                            rule="SPACY_GERUND_SUBJECT_MISMATCH",
-                            message=(
-                                f"Gerund adjective {' and '.join(mismatches)} mismatch: "
-                                f"'{child.text}' does not agree with main subject "
-                                f"'{root_subject.text}'. "
-                                f"(e.g. 'Essendo stanca, lui uscì' → "
-                                f"'Essendo stanco, lui uscì')"
-                            ),
-                        )
-                    )
+                    suggestion = self._inflect_italian(child.text, child.morph.get("Gender"), child.morph.get("Number"), s_gender[0] if s_gender else None, s_number[0] if s_number else None)
+                    issues.append(self._issue(
+                        text=text, token=child,
+                        rule="SPACY_GERUND_SUBJECT_MISMATCH",
+                        message=(
+                            f"Accordo gerundio-soggetto ({' e '.join(mismatches)}): "
+                            f"'{child.text}' non concorda con il soggetto principale "
+                            f"'{root_subject.text}'. "
+                            f"(es. 'Essendo stanca, lui uscì' → 'Essendo stanco, lui uscì')"
+                        ),
+                        suggestions=[suggestion] if suggestion else [],
+                    ))
         return issues
 
     # ------------------------------------------------------------------
-    # spaCy rule 16 – modal + non-infinitive  [NEW]
+    # Rule 16 – modal + non-infinitive
     # ------------------------------------------------------------------
 
     def spacy_modal_infinitive_issues(self, text: str) -> list:
-        """
-        Detect cases where a modal verb is followed by a non-infinitive
-        (e.g. a past participle or a conjugated verb form).
-
-        Wrong:   ``Voglio andati a casa.``   (andati = past participle)
-        Correct: ``Voglio andare a casa.``   (andare = infinitive)
-
-        Detection
-        ---------
-        Find VERB/AUX tokens whose lemma is in _MODAL_VERBS, then look at
-        their xcomp / ccomp children. If the child verb's VerbForm is not
-        'Inf', flag it.
-        """
         if self.nlp is None:
             return []
-
         issues = []
         doc = self.nlp(text)
-
         for token in doc:
             if token.pos_ not in ("VERB", "AUX"):
                 continue
             if token.lemma_.lower() not in _MODAL_VERBS:
                 continue
-
             for child in token.children:
                 if child.dep_ not in ("xcomp", "ccomp", "obj"):
                     continue
                 if child.pos_ not in ("VERB", "AUX"):
                     continue
-
                 verb_form = child.morph.get("VerbForm")
                 if not verb_form:
                     continue
-
                 if "Inf" not in verb_form:
-                    wrong_form = verb_form[0] if verb_form else "non-infinitive"
-                    issues.append(
-                        self._issue(
-                            text=text,
-                            token=child,
-                            rule="SPACY_MODAL_INFINITIVE",
-                            message=(
-                                f"Modal verb '{token.text}' requires an infinitive, "
-                                f"but '{child.text}' is a {wrong_form}. "
-                                f"(e.g. 'Voglio andati' → 'Voglio andare')"
-                            ),
-                            suggestions=[child.lemma_ + "re" if not child.lemma_.endswith("re") else child.lemma_],
-                        )
+                    wrong_form = verb_form[0] if verb_form else "forma non infinitiva"
+                    lemma = child.lemma_
+                    infinitive = lemma if lemma.endswith("re") else lemma + "re"
+                    issues.append(self._issue(
+                        text=text, token=child,
+                        rule="SPACY_MODAL_INFINITIVE",
+                        message=(
+                            f"Il verbo modale '{token.text}' richiede l'infinito, "
+                            f"ma '{child.text}' è un {wrong_form}. "
+                            f"(es. 'Voglio andati' → 'Voglio andare')"
+                        ),
+                        suggestions=[infinitive],
+                    ))
+        return issues
+
+    # ------------------------------------------------------------------
+    # Rule 17 – wrong auxiliary (avere vs essere) — NEW
+    # ------------------------------------------------------------------
+
+    def spacy_wrong_auxiliary_issues(self, text: str) -> list:
+        """
+        Detect cases where a verb that requires ESSERE is used with AVERE
+        in compound tenses, or vice versa.
+
+        Example: 'Ho andato' → 'Sono andato'
+                 'Sono mangiato' → 'Ho mangiato'
+
+        Dual-auxiliary verbs are skipped because their auxiliary depends
+        on transitivity and would produce too many false positives.
+        """
+        if self.nlp is None:
+            return []
+        issues = []
+        doc = self.nlp(text)
+
+        for token in doc:
+            if not self._is_past_participle(token):
+                continue
+            if token.lemma_.lower() in ("essere", "stare"):
+                continue
+            if token.lemma_.lower() in _DUAL_AUXILIARY_VERBS:
+                continue
+
+            aux_tokens = [child for child in token.children if child.dep_ == "aux"]
+            aux_lemmas = {child.lemma_.lower() for child in aux_tokens}
+            if not aux_lemmas:
+                continue
+
+            verb_lemma = token.lemma_.lower()
+            needs_essere = verb_lemma in _ESSERE_VERBS
+
+            if needs_essere and "avere" in aux_lemmas and "essere" not in aux_lemmas:
+                issues.append(self._issue(
+                    text=text, token=token,
+                    rule="SPACY_WRONG_AUXILIARY",
+                    message=(
+                        f"'{verb_lemma}' richiede l'ausiliare 'essere', "
+                        f"non 'avere'. "
+                        f"(es. 'Ho andato' → 'Sono andato')"
+                    ),
+                    suggestions=[self._suggest_wrong_auxiliary_phrase(aux_tokens[0], token, "essere") if aux_tokens else "essere"],
+                ))
+            elif not needs_essere and "essere" in aux_lemmas and "avere" not in aux_lemmas:
+                # Only flag if the verb is clearly transitive (has an obj child)
+                has_obj = any(c.dep_ in ("obj", "iobj") for c in token.children)
+                if has_obj:
+                    issues.append(self._issue(
+                        text=text, token=token,
+                        rule="SPACY_WRONG_AUXILIARY",
+                        message=(
+                            f"'{verb_lemma}' usato transitivamente richiede l'ausiliare 'avere', "
+                            f"non 'essere'. "
+                            f"(es. 'Sono mangiato la pizza' → 'Ho mangiato la pizza')"
+                        ),
+                        suggestions=[self._suggest_wrong_auxiliary_phrase(aux_tokens[0], token, "avere") if aux_tokens else "avere"],
+                    ))
+        return issues
+
+    # ------------------------------------------------------------------
+    # Rule 18 – comparative construction errors — NEW
+    # ------------------------------------------------------------------
+
+    def spacy_comparative_issues(self, text: str) -> list:
+        """
+        Detect common errors in Italian comparatives:
+        - 'più … di' vs 'più … che' confusion
+          Rule: use 'di' when comparing two different nouns/pronouns with
+          the same adjective. Use 'che' when comparing two adjectives,
+          verbs, adverbs or prepositional phrases about the same noun.
+        - 'più migliore', 'più peggiore', 'più maggiore', 'più minore'
+          (double comparative — redundant 'più' before already-comparative adj)
+        """
+        if self.nlp is None:
+            return []
+
+        _ALREADY_COMPARATIVE = {
+            "migliore", "peggiore", "maggiore", "minore",
+            "superiore", "inferiore", "anteriore", "posteriore",
+        }
+
+        issues = []
+        doc = self.nlp(text)
+        tokens = list(doc)
+
+        for i, token in enumerate(tokens):
+            # Double comparative: 'più' + already-comparative adjective
+            if token.text.lower() == "più" and i + 1 < len(tokens):
+                next_tok = tokens[i + 1]
+                if next_tok.lemma_.lower() in _ALREADY_COMPARATIVE:
+                    issues.append(self._issue(
+                        text=text, token=token,
+                        rule="SPACY_DOUBLE_COMPARATIVE",
+                        message=(
+                            f"Doppio comparativo: '{token.text} {next_tok.text}' è ridondante. "
+                            f"'{next_tok.text}' è già un comparativo. "
+                            f"(es. 'più migliore' → 'migliore')"
+                        ),
+                        suggestions=[next_tok.text],
+                    ))
+        return issues
+
+    # ------------------------------------------------------------------
+    # Rule 19 – congiuntivo after verbs requiring it — NEW
+    # ------------------------------------------------------------------
+
+    def spacy_missing_subjunctive_issues(self, text: str) -> list:
+        """
+        Detect indicative mood used where congiuntivo is required.
+        Triggered when verbs of opinion/doubt/wish/fear introduce a
+        subordinate clause with 'che' but the subordinate verb is indicative.
+
+        This is a heuristic — spaCy's mood tagging is imperfect for Italian,
+        so we only flag high-confidence cases.
+        """
+        if self.nlp is None:
+            return []
+
+        _SUBJ_TRIGGERS = {
+            "volere", "sperare", "credere", "pensare", "dubitare",
+            "temere", "desiderare", "preferire", "augurarsi",
+            "bisognare", "occorrere", "sembrare", "parere",
+            "essere necessario", "essere importante", "essere possibile",
+        }
+
+        issues = []
+        doc = self.nlp(text)
+
+        for token in doc:
+            if token.lemma_.lower() not in _SUBJ_TRIGGERS:
+                continue
+            # Look for a 'che' complementizer child leading to a ccomp
+            for child in token.children:
+                if child.dep_ not in ("ccomp", "xcomp"):
+                    continue
+                if child.pos_ not in ("VERB", "AUX"):
+                    continue
+                # Check if subordinate verb is indicative (should be subjunctive)
+                mood = child.morph.get("Mood", [])
+                if "Ind" in mood:
+                    # Check there is a 'che' token between the trigger and the child
+                    start = min(token.i, child.i)
+                    end = max(token.i, child.i)
+                    has_che = any(
+                        t.text.lower() == "che"
+                        for t in doc[start:end]
                     )
+                    if has_che:
+                        suggestion = self._suggest_subjunctive(child)
+                        issues.append(self._issue(
+                            text=text, token=child,
+                            rule="SPACY_MISSING_SUBJUNCTIVE",
+                            message=(
+                                f"Dopo '{token.text}' + 'che' si usa il congiuntivo, "
+                                f"non l'indicativo. "
+                                f"'{child.text}' ({mood[0] if mood else '?'}) "
+                                f"potrebbe essere al congiuntivo. "
+                                f"(es. 'Penso che è tardi' → 'Penso che sia tardi')"
+                            ),
+                            suggestions=[suggestion] if suggestion else [],
+                        ))
         return issues
 
     # ------------------------------------------------------------------
@@ -1653,79 +1684,40 @@ class GrammarCorrector:
     # ------------------------------------------------------------------
 
     def correct_text(self, text: str) -> dict:
-        """
-        Main entry point.
-
-        Runs LanguageTool and all 16 spaCy rules, merges the results, and
-        returns a unified audit payload with duplicates removed.
-
-        Deduplication
-        -------------
-        Multiple rules can fire on the same token (e.g. rule 1 "noun
-        agreement" and rule 5 "article–noun agreement" both flag the same
-        article token). We keep the most specific match per (offset, rule_family)
-        pair, preferring spaCy issues over LanguageTool ones for the same span
-        since spaCy messages are more actionable.
-
-        Returns
-        -------
-        dict with keys:
-            original  – the input string unchanged
-            corrected – the LanguageTool auto-corrected version
-            polished  – same as corrected (hook for future post-processing)
-            matches   – deduplicated list of standardised issue dictionaries
-        """
         if not text or not text.strip():
-            return {
-                "original": text,
-                "corrected": text,
-                "polished": text,
-                "matches": [],
-            }
+            return {"original": text, "corrected": text, "polished": text, "matches": []}
 
-        # --- LanguageTool ---
+        # LanguageTool
         lt_matches = self.tool.check(text)
         corrected_text = language_tool_python.utils.correct(text, lt_matches)
         parsed_lt = self.parse_language_tool_matches(text, lt_matches)
 
-        # --- spaCy rules ---
+        # spaCy rules
         spacy_issues = (
-            self.spacy_noun_agreement_issues(text)            # rule  1
-            + self.spacy_subject_verb_issues(text)            # rule  2
-            + self.spacy_possessive_noun_issues(text)         # rule  3
-            + self.spacy_aux_participle_issues(text)          # rule  4
-            + self.spacy_article_noun_issues(text)            # rule  5
-            + self.spacy_postnominal_adjective_issues(text)   # rule  6
-            + self.spacy_preposition_contraction_issues(text) # rule  7
-            + self.spacy_verb_preposition_issues(text)        # rule  8
-            + self.spacy_predicate_adjective_issues(text)     # rule  9
-            + self.spacy_clitic_agreement_issues(text)        # rule 10
-            + self.spacy_partitive_article_issues(text)       # rule 11
-            + self.spacy_missing_reflexive_clitic(text)       # rule 12
-            + self.spacy_double_negation_issues(text)         # rule 13
-            + self.spacy_interrogative_word_order_issues(text)# rule 14
-            + self.spacy_gerund_subject_mismatch(text)        # rule 15
-            + self.spacy_modal_infinitive_issues(text)        # rule 16
+            self.spacy_noun_agreement_issues(text)             # 1
+            + self.spacy_subject_verb_issues(text)             # 2
+            + self.spacy_possessive_noun_issues(text)          # 3
+            + self.spacy_aux_participle_issues(text)           # 4
+            + self.spacy_article_noun_issues(text)             # 5
+            + self.spacy_postnominal_adjective_issues(text)    # 6
+            + self.spacy_preposition_contraction_issues(text)  # 7
+            + self.spacy_verb_preposition_issues(text)         # 8
+            + self.spacy_predicate_adjective_issues(text)      # 9
+            + self.spacy_clitic_agreement_issues(text)         # 10
+            + self.spacy_partitive_article_issues(text)        # 11
+            + self.spacy_missing_reflexive_clitic(text)        # 12
+            + self.spacy_double_negation_issues(text)          # 13
+            + self.spacy_interrogative_word_order_issues(text) # 14
+            + self.spacy_gerund_subject_mismatch(text)         # 15
+            + self.spacy_modal_infinitive_issues(text)         # 16
+            + self.spacy_wrong_auxiliary_issues(text)          # 17
+            + self.spacy_comparative_issues(text)              # 18
+            + self.spacy_missing_subjunctive_issues(text)      # 19
         )
 
         all_matches = parsed_lt + spacy_issues
 
-        # ------------------------------------------------------------------
-        # Deduplication
-        # ------------------------------------------------------------------
-        # Two issues are considered duplicates when they flag the SAME character
-        # span AND belong to the same broad error family.
-        #
-        # Rule family is derived from the rule string:
-        #   SPACY_NOUN_AGREEMENT and SPACY_ARTICLE_NOUN_AGREEMENT both cover
-        #   "agreement" so they share a family key based on offset alone.
-        #
-        # Priority order (higher index wins within the same span):
-        #   LanguageTool generic  <  spaCy generic  <  spaCy specific
-        # "Specific" means the rule name contains the exact error type
-        # (ARTICLE, POSSESSIVE, PREDICATE, etc.) rather than the catch-all
-        # NOUN_AGREEMENT.
-
+        # Deduplication — keep highest-priority issue per character offset
         _GENERIC_RULES = {"SPACY_NOUN_AGREEMENT", "SPACY_POSTNOMINAL_ADJ_AGREEMENT"}
 
         def _priority(issue: dict) -> int:
@@ -1735,15 +1727,13 @@ class GrammarCorrector:
                 return 1
             return 2
 
-        # Group by character offset; keep the highest-priority issue per span
         best: dict[int, dict] = {}
         for issue in all_matches:
             offset = issue["offset"]
             if offset not in best or _priority(issue) > _priority(best[offset]):
                 best[offset] = issue
 
-        # Restore original order
-        seen_offsets: set[int] = set()
+        seen_offsets: set = set()
         deduped: list[dict] = []
         for issue in all_matches:
             offset = issue["offset"]

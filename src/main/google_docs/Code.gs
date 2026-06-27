@@ -1,5 +1,44 @@
 const BASE_API_URL = "  ";
 
+function postJson(path, payload) {
+  const apiUrl = (BASE_API_URL || "").trim();
+
+  if (!apiUrl) {
+    return {
+      success: false,
+      message: "BASE_API_URL is empty. Please set the current ngrok URL in Code.gs."
+    };
+  }
+
+  try {
+    const response = UrlFetchApp.fetch(apiUrl + path, {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload || {}),
+      muteHttpExceptions: true
+    });
+
+    const status = response.getResponseCode();
+    const body = response.getContentText();
+
+    if (status !== 200) {
+      return {
+        success: false,
+        message: body || ("API request failed with HTTP " + status)
+      };
+    }
+
+    return JSON.parse(body);
+  } catch (error) {
+    return {
+      success: false,
+      message: (
+        "API connection failed. Check uvicorn, ngrok, and BASE_API_URL. " +
+        "Details: " + error.message
+      )
+    };
+  }
+}
 
 
 
@@ -19,7 +58,8 @@ function showSidebar() {
 }
 
 function getSelectedText() {
-  const selection = DocumentApp.getActiveDocument().getSelection();
+  const document = DocumentApp.getActiveDocument();
+  const selection = document.getSelection();
 
   if (!selection) {
     return {
@@ -65,26 +105,15 @@ function analyzeSelectedText() {
     return selected;
   }
 
-  const response = UrlFetchApp.fetch(BASE_API_URL + "/analyze", {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify({
-      text: selected.text
-    }),
-    muteHttpExceptions: true
+  clearStoredReviewState();
+
+  const result = postJson("/analyze", {
+    text: selected.text
   });
 
-  const status = response.getResponseCode();
-  const body = response.getContentText();
-
-  if (status !== 200) {
-    return {
-      success: false,
-      message: body
-    };
+  if (!result.success) {
+    return result;
   }
-
-  const result = JSON.parse(body);
 
   PropertiesService.getDocumentProperties().setProperty(
     "latestOriginalText",
@@ -97,6 +126,17 @@ function analyzeSelectedText() {
   );
 
   return result;
+}
+
+function clearStoredReviewState() {
+  const props = PropertiesService.getDocumentProperties();
+  props.deleteProperty("latestOriginalText");
+  props.deleteProperty("latestAnalysisResult");
+  props.deleteProperty("latestOptimizedText");
+
+  return {
+    success: true
+  };
 }
 
 function rewriteAfterReview(mode, decisions) {
@@ -120,34 +160,81 @@ function rewriteAfterReview(mode, decisions) {
     };
   }
 
-  const response = UrlFetchApp.fetch(BASE_API_URL + "/rewrite", {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify({
-      text: originalText,
-      mode: mode || "concise",
-      decisions: decisions || {}
-    }),
-    muteHttpExceptions: true
+  const result = postJson("/rewrite", {
+    text: originalText,
+    mode: mode || "concise",
+    decisions: decisions || {},
+    analysis: JSON.parse(latestAnalysisResult)
   });
 
-  const status = response.getResponseCode();
-  const body = response.getContentText();
-
-  if (status !== 200) {
-    return {
-      success: false,
-      message: body
-    };
+  if (!result.success) {
+    return result;
   }
-
-  const result = JSON.parse(body);
 
   PropertiesService.getDocumentProperties().setProperty(
     "latestOptimizedText",
     result.final || ""
   );
 
+  return result;
+}
+
+function previewAfterReview(decisions) {
+  const props = PropertiesService.getDocumentProperties();
+
+  const originalText = props.getProperty("latestOriginalText");
+  const latestAnalysisResult = props.getProperty("latestAnalysisResult");
+
+  if (!originalText || !latestAnalysisResult) {
+    return {
+      success: false,
+      message: "No successful analysis found. Please run analysis first."
+    };
+  }
+
+  const result = postJson("/preview", {
+    text: originalText,
+    decisions: decisions || {},
+    analysis: JSON.parse(latestAnalysisResult)
+  });
+
+  if (!result.success) {
+    return result;
+  }
+
+  return result;
+}
+
+function applyReviewDecisionsToSelection(decisions) {
+  const props = PropertiesService.getDocumentProperties();
+
+  const originalText = props.getProperty("latestOriginalText");
+  const latestAnalysisResult = props.getProperty("latestAnalysisResult");
+
+  if (!originalText || !latestAnalysisResult) {
+    return {
+      success: false,
+      message: "No successful analysis found. Please run analysis first."
+    };
+  }
+
+  const result = postJson("/preview", {
+    text: originalText,
+    decisions: decisions || {},
+    analysis: JSON.parse(latestAnalysisResult)
+  });
+
+  if (!result.success) {
+    return result;
+  }
+
+  const replaceResult = replaceSelectedTextWith(result.final || "");
+
+  if (!replaceResult.success) {
+    return replaceResult;
+  }
+
+  result.message = "Document updated with selected review decisions.";
   return result;
 }
 
@@ -163,20 +250,16 @@ function saveOptimizedTextFromSidebar(text) {
   };
 }
 
-function acceptRewrite() {
-  const optimizedText =
-    PropertiesService.getDocumentProperties().getProperty(
-      "latestOptimizedText"
-    );
-
-  if (!optimizedText) {
+function replaceSelectedTextWith(replacementText) {
+  if (!replacementText) {
     return {
       success: false,
-      message: "No optimized text available."
+      message: "No replacement text available."
     };
   }
 
-  const selection = DocumentApp.getActiveDocument().getSelection();
+  const document = DocumentApp.getActiveDocument();
+  const selection = document.getSelection();
 
   if (!selection) {
     return {
@@ -195,20 +278,68 @@ function acceptRewrite() {
   }
 
   const firstRangeElement = rangeElements[0];
-  const firstElement = firstRangeElement.getElement().asText();
+  const firstTextElement = firstRangeElement.getElement().asText();
+  const insertOffset = firstRangeElement.isPartial()
+    ? firstRangeElement.getStartOffset()
+    : 0;
 
-  if (firstRangeElement.isPartial()) {
-    const start = firstRangeElement.getStartOffset();
-    const end = firstRangeElement.getEndOffsetInclusive();
+  // Delete from the end of the selection backwards. This keeps offsets valid
+  // even when the selected text spans multiple text nodes or paragraphs.
+  for (let i = rangeElements.length - 1; i >= 0; i--) {
+    const rangeElement = rangeElements[i];
+    const textElement = rangeElement.getElement().asText();
 
-    firstElement.deleteText(start, end);
-    firstElement.insertText(start, optimizedText);
-  } else {
-    firstElement.setText(optimizedText);
+    if (rangeElement.isPartial()) {
+      textElement.deleteText(
+        rangeElement.getStartOffset(),
+        rangeElement.getEndOffsetInclusive()
+      );
+    } else {
+      textElement.setText("");
+    }
+  }
+
+  firstTextElement.insertText(insertOffset, replacementText);
+
+  const endOffset = insertOffset + replacementText.length - 1;
+  if (endOffset >= insertOffset) {
+    const newRange = document
+      .newRange()
+      .addElement(firstTextElement, insertOffset, endOffset)
+      .build();
+    document.setSelection(newRange);
   }
 
   return {
     success: true,
     message: "Text replaced successfully."
+  };
+}
+
+function acceptRewrite() {
+  const optimizedText =
+    PropertiesService.getDocumentProperties().getProperty(
+      "latestOptimizedText"
+    );
+
+  if (!optimizedText) {
+    return {
+      success: false,
+      message: "No optimized text available."
+    };
+  }
+
+  const replaceResult = replaceSelectedTextWith(optimizedText);
+
+  if (!replaceResult.success) {
+    return replaceResult;
+  }
+
+  clearStoredReviewState();
+
+  return {
+    success: true,
+    cleared: true,
+    message: "Text replaced successfully. Analysis cleared."
   };
 }

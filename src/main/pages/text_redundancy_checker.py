@@ -199,6 +199,16 @@ def apply_pleonasm_replacements(text: str, pleonasms: list[dict]) -> str:
         )
     return normalize_spacing(cleaned)
 
+def apply_pleonasm_decisions(self, text: str, pleonasms: list[dict], decisions: dict) -> str:
+    working = self._normalize(text)
+
+    selected = []
+    for index, item in enumerate(pleonasms, start=1):
+        pid = str(index)
+        if decisions.get(pid) == "apply":
+            selected.append(item)
+
+    return apply_pleonasm_replacements(working, selected)
 
 # ---------------------------------------------------------------------------
 # Repeated and similar words

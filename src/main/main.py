@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from writing_service import WritingService
 
@@ -17,6 +17,13 @@ class RewriteRequest(BaseModel):
     text: str
     mode: str = "concise"
     decisions: Optional[Dict[str, str]] = None
+    analysis: Optional[Dict[str, Any]] = None
+
+
+class PreviewRequest(BaseModel):
+    text: str
+    decisions: Optional[Dict[str, str]] = None
+    analysis: Optional[Dict[str, Any]] = None
 
 
 @app.get("/")
@@ -48,6 +55,7 @@ def analyze_text_endpoint(request: AnalyzeRequest):
 
         "user_choice_candidates": result["user_choice_candidates"],
         "merge_candidates": result["merge_candidates"],
+        "review_options": result["review_options"],
     }
 
 
@@ -58,6 +66,7 @@ def rewrite_text_endpoint(request: RewriteRequest):
         mode=request.mode,
         decisions=request.decisions or {},
         final_check=False,
+        analysis=request.analysis,
     )
 
     return {
@@ -66,4 +75,20 @@ def rewrite_text_endpoint(request: RewriteRequest):
         "final": result["final"],
         "final_grammar_matches": result["final_grammar_matches"],
         "metrics": result["final_metrics"],
+        "decision_summary": result["decision_summary"],
+    }
+
+
+@app.post("/preview")
+def preview_text_endpoint(request: PreviewRequest):
+    result = service.preview_after_analysis(
+        text=request.text,
+        decisions=request.decisions or {},
+        analysis=request.analysis,
+    )
+
+    return {
+        "success": True,
+        "final": result["final"],
+        "decision_summary": result["decision_summary"],
     }
