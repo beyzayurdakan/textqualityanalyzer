@@ -483,7 +483,7 @@
           "variante_corretta": "Mostra immagini."
         },
         {
-          "pleonasmo": "stranieri dall'esterno",
+          "pleonasmo": "stranieri dall'estero",
           "forma_corretta": "stranieri",
           "spiegazione": "Gli stranieri provengono già dall'esterno della comunità o del Paese.",
           "uso_comune": "Sono arrivati stranieri dall'esterno.",
@@ -546,8 +546,8 @@
           "nota": "Usato comunemente per enfatizzare la testimonianza diretta."
         },
           {
-          "pleonasmo": "riaprire di nuovo",
-          "forma_corretta": "riaprire",
+          "pleonasmo": "riaperto di nuovo",
+          "forma_corretta": "riaperto",
           "spiegazione": "Riaprire e gia qualcosa aperta di nuovo",
           "uso_comune": "Aprire di nuovo",
           "variante_corretta": "Riaprire",
@@ -576,7 +576,7 @@
           "nota": "In senso figurato 'andare avanti' è accettato e comune."
         },
         {
-          "pleonasmo": "ripetere di nuovo",
+          "pleonasmo": "riperto di nuovo",
           "forma_corretta": "ripetere",
           "spiegazione": "'Ripetere' già implica farlo di nuovo.",
           "uso_comune": "Te lo ripeto di nuovo.",
@@ -661,6 +661,14 @@
           "spiegazione": "'Precedere' significa già andare prima.",
           "uso_comune": "Questo è preceduto prima dall'altro.",
           "variante_corretta": "Questo precede l'altro."
+        },
+        {
+          "pleonasmo": "continua ancora oggi",
+          "forma_corretta": "continua",
+          "spiegazione": "",
+          "uso_comune": "",
+          "variante_corretta": "",
+          "nota": ""
         }
       ]
     },
@@ -730,6 +738,20 @@
           "spiegazione": "'Olografo' significa già scritto di proprio pugno.",
           "uso_comune": "Ha lasciato un testamento olografo scritto di proprio pugno.",
           "variante_corretta": "Ha lasciato un testamento olografo."
+        },
+        {
+          "pleonasmo": "dettaglio particolare",
+          "forma_corretta": "dettaglio",
+          "spiegazione": "'particolare' significa dettaglio",
+          "uso_comune": "La guida ha spiegato ogni dettaglio particolare delle opere principali",
+          "variante_corretta": "La guida ha spiegato ogni dettaglio  delle opere principali"
+        },
+        {
+          "pleonasmo": "sintesi riassuntiva",
+          "forma_corretta": "sintesi",
+          "spiegazione": "",
+          "uso_comune": "",
+          "variante_corretta": ""
         }
       ]
     },

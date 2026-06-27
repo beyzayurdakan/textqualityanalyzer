@@ -1196,7 +1196,7 @@ Input text + analysis results
   │   ├─ score ≥ user_choice_threshold  →  user_choice_candidates
   │   └─ merge_threshold ≤ score < user_choice_threshold  →  merge_candidates
   ├─ Identify resolved repeated words
-  └─ Return pre-merged text and metadata
+  └─ Return pre-merged text and metadata (deleted_pairs is always empty)
         │
         ▼
   build_prompt()
@@ -1247,6 +1247,7 @@ Prepares redundant sentence pairs before the text is sent to the LLM. No sentenc
     user_choice_candidates, # Highly similar pairs awaiting user decision
 )
 ```
+
 
 **Content word extraction — `_content_words()`:**
 
@@ -1318,8 +1319,8 @@ Builds a structured Italian-language prompt that gives the LLM full context for 
 |---|---|
 | 1. Repeated words | Words still repeated after pre-processing, with occurrence count |
 | 2. Pleonasms | Detected pleonasms and their suggested replacements |
-| 3. Similar words | Word pairs with similarity `0.75 ≤ score < 1.00`; capped at ~360 characters to limit prompt length |
-| 4. Auto-deleted pairs | Always empty in the current implementation |
+| 3. Similar words | Word pairs with similarity `0.75 ≤ score < 1.00`; capped at 6 pairs to limit prompt length |
+| 4. Auto-deleted pairs | Always empty (`nessuna`) — no auto-deletion occurs in the current implementation |
 | 5. Merge candidates | Sentence pairs eligible for merging with similarity score and action label |
 | 6. User choice candidates | Highly similar pairs to be preserved or merged without auto-deletion |
 
@@ -1357,11 +1358,35 @@ Orchestrates the full pipeline and calls the Ollama API.
 | `repetition_analysis` | `dict` | Output from the repetition analyzer; expects `repeated_words` key |
 | `redundancy_report` | `dict` | Output from the redundancy detector; expects `redundant_sentences`, `pleonasms`, `similar_words` keys |
 | `mode` | `str` | Rewrite style: `concise`, `fluent`, `academic`, or `standard` |
+| `decision_summary` | `dict \| None` | Accepted for signature compatibility but **not used** — ignored internally |
+
+
+
+**`rewrite_clean()` method:**
+
+A backward-compatibility wrapper that calls `rewrite()` with empty `repetition_analysis` and `redundancy_report` dicts:
+
+```python
+def rewrite_clean(self, text: str, mode: str = "concise") -> str:
+    return self.rewrite(text=text, repetition_analysis={}, redundancy_report={}, mode=mode)
+```
 
 **LLM call settings:**
 
 - System prompt: instructs the model to act as a professional Italian text reviewer using clear, natural, simple language.
 - Temperature: `0.1` (low, for deterministic and conservative rewrites).
+
+---
+
+### Integration with `WritingService.rewrite_after_analysis()`
+
+When the rewriter is called from `WritingService`, the following sequence applies:
+
+1. All user decisions are applied deterministically via `_build_direct_preview_text()` to produce `rewrite_base`.
+2. A **fresh** `analyze_only()` run is performed on `rewrite_base` to obtain up-to-date analysis.
+3. `TextRewriter.rewrite()` is called with the fresh analysis and `decision_summary=None` — the LLM rewrites without any decision context.
+
+This means the LLM always operates on already-cleaned text and is never given the original decision history.
 
 ---
 
@@ -1406,8 +1431,10 @@ RepetitionAnalyzer  ──► repetition_analysis ──► TextRewriter.rewrite
 RedundancyDetector  ──► redundancy_report   ──► TextRewriter.rewrite()
                                                      │
                                                PreMerger.merge()
+                                               (deleted_pairs always [])
                                                      │
                                                build_prompt()
+                                               (section 4 always "nessuna")
                                                      │
                                                ollama.chat()
                                                      │
@@ -1415,7 +1442,6 @@ RedundancyDetector  ──► redundancy_report   ──► TextRewriter.rewrite
                                                      │
                                            Final rewritten text
 ```
-
 
 ### External Dependencies
 
