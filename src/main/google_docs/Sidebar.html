@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 14px;
+        color: #202124;
+        background: #ffffff;
+      }
+
+      h2 {
+        margin-top: 0;
+        margin-bottom: 6px;
+        font-size: 19px;
+      }
+
+      .subtitle {
+        margin-top: 0;
+        margin-bottom: 14px;
+        font-size: 12px;
+        color: #5f6368;
+        line-height: 1.4;
+      }
+
+      .audience-box {
+        border: 1px solid #dadce0;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #f8fafd;
+      }
+
+      .audience-box label {
+        display: block;
+        font-size: 12px;
+        margin: 5px 0;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        margin: 6px 0;
+        border: none;
+        border-radius: 8px;
+        background: #1a73e8;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      button:hover:not(:disabled) {
+        filter: brightness(0.95);
+      }
+
+      button:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+      }
+
+      button.secondary {
+        background: #188038;
+      }
+
+      button.light {
+        background: #e8f0fe;
+        color: #174ea6;
+      }
+
+      .status {
+        margin: 10px 0;
+        font-size: 13px;
+        color: #5f6368;
+        line-height: 1.4;
+      }
+
+      .export-wrapper {
+        margin-top: 10px;
+        display: none;
+      }
+
+      .export-options {
+        display: none;
+        margin-top: 6px;
+        padding: 8px;
+        border: 1px solid #dadce0;
+        border-radius: 10px;
+        background: #f8fafd;
+      }
+
+      .card {
+        border: 1px solid #dadce0;
+        border-radius: 10px;
+        padding: 12px;
+        margin: 10px 0;
+        background: #fff;
+      }
+
+      .summary-card {
+        background: #f8fafd;
+      }
+
+      .warning-card {
+        background: #fff7e6;
+        border-left: 4px solid #f9ab00;
+      }
+
+      .good-card {
+        background: #e6f4ea;
+        border-left: 4px solid #34a853;
+      }
+
+      .error-card {
+        background: #fce8e6;
+        border-left: 4px solid #d93025;
+      }
+
+      .card-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 700;
+        font-size: 15px;
+      }
+
+      .counter {
+        color: #5f6368;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 6px 0;
+        font-size: 13px;
+      }
+
+      .metric span:first-child {
+        color: #3c4043;
+      }
+
+      .metric strong {
+        text-align: right;
+      }
+
+      .clickable-text {
+        padding: 9px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #202124;
+        cursor: pointer;
+        line-height: 1.45;
+        font-size: 13px;
+      }
+
+      .clickable-text:hover {
+        background: #e8f0fe;
+        border-color: #1a73e8;
+      }
+
+      .warning-list {
+        margin: 8px 0 0 0;
+        padding-left: 18px;
+      }
+
+      .warning-list li {
+        margin-bottom: 6px;
+        line-height: 1.4;
+      }
+
+      .pager {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        gap: 8px;
+      }
+
+      .pager button {
+        width: 48%;
+        margin: 0;
+      }
+
+      .small {
+        font-size: 12px;
+        color: #5f6368;
+        line-height: 1.4;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: #e8f0fe;
+        color: #174ea6;
+        font-size: 12px;
+        margin: 2px 4px 2px 0;
+      }
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-top: 8px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.table-wrapper table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 520px;
+  font-size: 11px;
+}
+
+.table-wrapper th,
+.table-wrapper td {
+  border: 1px solid #dadce0;
+  padding: 6px;
+  vertical-align: top;
+  line-height: 1.35;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.table-wrapper th {
+  background: #f3f6f9;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.table-wrapper td {
+  max-width: 150px;
+}
+
+      a {
+        color: #1a73e8;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>Italian Text Quality Analyzer</h2>
+
+    <p class="subtitle">
+      Select one or more target audiences, analyze the document, and review the results.
+    </p>
+
+    <div class="audience-box">
+      <div class="small"><strong>Target audience</strong></div>
+
+      <label><input type="checkbox" name="audience" value="elementary_school_readers"> Elementary school readers</label>
+      <label><input type="checkbox" name="audience" value="middle_school_readers"> Middle school readers</label>
+      <label><input type="checkbox" name="audience" value="high_school_readers"> High school readers</label>
+      <label><input type="checkbox" name="audience" value="general_public" checked> General public</label>
+      <label><input type="checkbox" name="audience" value="academic_readers"> Academic readers</label>
+      <label><input type="checkbox" name="audience" value="technical_readers"> Technical readers</label>
+      <label><input type="checkbox" name="audience" value="childrens_literature"> Children’s literature</label>
+      <label><input type="checkbox" name="audience" value="literary_fiction"> Literary fiction</label>
+    </div>
+
+    <button id="analyzeButton" onclick="runAnalysis()">Analyze document</button>
+
+    <div id="exportWrapper" class="export-wrapper">
+      <button id="exportToggleButton" class="secondary" onclick="toggleExportOptions()">
+        Export analysis
+      </button>
+
+      <div id="exportOptions" class="export-options">
+        <button id="pdfButton" class="secondary" onclick="exportReport('pdf')">
+          Export report as PDF
+        </button>
+
+        <button id="docxButton" class="secondary" onclick="exportReport('docx')">
+          Export report as DOCX
+        </button>
+
+        <button id="analyzedDocButton" class="secondary" onclick="getAnalyzedDocument()">
+          Get analyzed document
+        </button>
+      </div>
+    </div>
+
+    <div id="status" class="status">Ready.</div>
+    <div id="results"></div>
+
+    <script>
+      let latestAnalysis = null;
+
+      const pagerState = {
+        overview: 0,
+        warning: 0,
+        lemma: 0,
+        entity: 0,
+        paragraph: 0,
+        misspelling: 0
+      };
+
+      function getSelectedTargetAudiences() {
+        const selected = [];
+        const checkboxes = document.querySelectorAll('input[name="audience"]:checked');
+
+        checkboxes.forEach(function (checkbox) {
+          selected.push(checkbox.value);
+        });
+
+        return selected.length > 0 ? selected : ['general_public'];
+      }
+
+      function runAnalysis() {
+        setLoading(true, 'Analyzing document...');
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            latestAnalysis = result;
+            resetPagers();
+            setLoading(false, 'Analysis completed.');
+            showExportControls(true);
+            renderAnalysis(result);
+          })
+          .withFailureHandler(function (error) {
+            latestAnalysis = null;
+            showExportControls(false);
+            setLoading(false, 'Analysis failed: ' + error.message);
+            renderError('Analysis failed.', error.message);
+          })
+          .analyzeWithSpacyBackend(getSelectedTargetAudiences());
+      }
+
+      function resetPagers() {
+        pagerState.overview = 0;
+        pagerState.warning = 0;
+        pagerState.lemma = 0;
+        pagerState.entity = 0;
+        pagerState.paragraph = 0;
+        pagerState.misspelling = 0;
+      }
+
+      function showExportControls(show) {
+        document.getElementById('exportWrapper').style.display = show ? 'block' : 'none';
+
+        if (!show) {
+          document.getElementById('exportOptions').style.display = 'none';
+        }
+      }
+
+      function toggleExportOptions() {
+        const options = document.getElementById('exportOptions');
+        options.style.display = options.style.display === 'block' ? 'none' : 'block';
+      }
+
+      function renderAnalysis(result) {
+        let html = '';
+
+        html += renderSummaryCard(result);
+        html += renderTargetAudienceTable(result);
+        html += renderAnalysisOverviewPager(result);
+        html += renderBaseVocabularyCard(result);
+        html += renderMisspellingPager(result);
+        html += renderWarningPager(result);
+        html += renderParagraphWarningPager(result);
+        html += renderLemmaPager(result);
+        html += renderEntityPager(result);
+
+        document.getElementById('results').innerHTML = html;
+      }
+
+      function renderSummaryCard(result) {
+        const metrics = result.global_metrics;
+
+        let html = '<div class="card summary-card">';
+        html += '<div class="card-title"><span>Global metrics</span></div>';
+        html += metricRow('Gulpease Index', formatValue(metrics.gulpease));
+        html += metricRow('Readability', metrics.readability_label);
+        html += metricRow('Lexical Diversity Index', formatValue(metrics.lexical_diversity));
+        html += metricRow('Syntactic Complexity Index', formatValue(metrics.syntactic_complexity_index));
+        html += metricRow('Words', metrics.word_count);
+        html += metricRow('Unique words', metrics.unique_word_count);
+        html += metricRow('Sentences', metrics.sentence_count);
+        html += metricRow('Letters', metrics.letter_count);
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderTargetAudienceTable(result) {
+        const items = result.target_audience_analysis || [];
+
+        if (items.length === 0) {
+          return renderEmptyCard('Target audience analysis', 'No target audience analysis available.');
+        }
+
+        let html = '<div class="card">';
+        html += '<div class="card-title"><span>Target audience analysis</span></div>';
+        html += '<div class="table-wrapper">';
+        html += '<table>';
+        html += '<tr><th>Audience</th><th>Fit</th><th>Gulpease</th><th>SCIX</th><th>Vocabulary</th></tr>';
+
+        items.forEach(function (item) {
+          html += '<tr>';
+          html += '<td>' + escapeHtml(item.label) + '</td>';
+          html += '<td>' + escapeHtml(item.overall_fit) + '</td>';
+          html += '<td>' + escapeHtml(item.gulpease_status) + '</td>';
+          html += '<td>' + escapeHtml(item.scix_status) + '</td>';
+          html += '<td>' + escapeHtml(item.base_vocabulary_status) + '</td>';
+          html += '</tr>';
+        });
+
+        html += '</table>';
+        html += '</div>';
+        items.forEach(function (item) {
+          html += '<p class="small"><strong>' + escapeHtml(item.label) + ':</strong> ' +
+            escapeHtml(item.recommended_focus) + '</p>';
+        });
+
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderAnalysisOverviewPager(result) {
+        const items = result.analysis_overview || result.suggestions || [];
+
+        if (items.length === 0) {
+          return renderEmptyCard('Analysis overview', 'No analysis overview items were generated.');
+        }
+
+        const index = clampIndex(pagerState.overview, items.length);
+        pagerState.overview = index;
+
+        let html = '<div class="card">';
+        html += cardTitle('Analysis overview', index + 1, items.length);
+        html += '<p>' + escapeHtml(normalizePluralText(items[index])) + '</p>';
+        html += pagerControls('overview', items.length);
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderBaseVocabularyCard(result) {
+        const base = result.base_vocabulary;
+
+        if (!base || !base.available) {
+          return renderEmptyCard(
+            'Base Vocabulary',
+            base && base.message ? base.message : 'Base Vocabulary analysis is unavailable.'
+          );
+        }
+
+        let html = '<div class="card">';
+        html += '<div class="card-title"><span>Base Vocabulary</span></div>';
+        html += metricRow('Coverage', formatValue(base.coverage_percentage) + '%');
+        html += metricRow('Vocabulary size', base.vocabulary_size);
+        html += metricRow('Checked tokens', base.checked_token_count);
+        html += metricRow('Covered tokens', base.covered_token_count);
+        html += metricRow('Outside tokens', base.outside_token_count);
+        html += '<p class="small">' + escapeHtml(base.message) + '</p>';
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderMisspellingPager(result) {
+        const items = result.base_vocabulary &&
+          result.base_vocabulary.possible_misspellings
+          ? result.base_vocabulary.possible_misspellings
+          : [];
+
+        if (items.length === 0) {
+          return renderEmptyCard('Possible misspellings / non-base vocabulary', 'No possible misspellings or non-base vocabulary items detected.');
+        }
+
+        const index = clampIndex(pagerState.misspelling, items.length);
+        pagerState.misspelling = index;
+        const item = items[index];
+
+        let html = '<div class="card warning-card">';
+        html += cardTitle('Possible misspellings / non-base vocabulary', index + 1, items.length);
+        html += '<p><strong>' + escapeHtml(item.lemma) + '</strong>: ';
+        html += item.count + ' ' + pluralWord(item.count, 'time', 'times') + '</p>';
+
+        if (item.forms && item.forms.length > 0) {
+          html += '<div class="small">Forms:</div>';
+
+          item.forms.forEach(function (form) {
+            html += '<span class="pill">' +
+              escapeHtml(form.form) +
+              ' · ' +
+              form.count +
+              ' ' +
+              pluralWord(form.count, 'time', 'times') +
+              '</span>';
+          });
+        }
+
+        html += '<p class="small">' + escapeHtml(item.reason) + '</p>';
+        html += pagerControls('misspelling', items.length);
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderWarningPager(result) {
+        const items = getWarningSentences(result);
+
+        if (items.length === 0) {
+          return '<div class="card good-card"><div class="card-title"><span>Sentence warnings</span><span class="counter">0/0</span></div>No sentence-level warnings detected.</div>';
+        }
+
+        const index = clampIndex(pagerState.warning, items.length);
+        pagerState.warning = index;
+        const sentence = items[index];
+
+        let html = '<div class="card warning-card">';
+        html += cardTitle('Sentence warnings', index + 1, items.length);
+        html += '<div class="small">Sentence ' + sentence.number + '</div>';
+
+        html += '<div class="clickable-text" onclick="selectSentence(' + index + ')">';
+        html += escapeHtml(sentence.text);
+        html += '</div>';
+
+        html += '<ul class="warning-list">';
+
+        sentence.warnings.forEach(function (warning) {
+          html += '<li>' + escapeHtml(normalizePluralText(warning)) + '</li>';
+        });
+
+        html += '</ul>';
+        html += pagerControls('warning', items.length);
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderParagraphWarningPager(result) {
+        const items = getParagraphWarnings(result);
+
+        if (items.length === 0) {
+          return renderEmptyCard('Paragraph warnings', 'No paragraph-level warnings detected.');
+        }
+
+        const index = clampIndex(pagerState.paragraph, items.length);
+        pagerState.paragraph = index;
+        const paragraph = items[index];
+
+        let html = '<div class="card warning-card">';
+        html += cardTitle('Paragraph warnings', index + 1, items.length);
+        html += '<div class="small">Paragraph ' + paragraph.number + '</div>';
+
+        html += '<div class="clickable-text" onclick="selectParagraph(' + index + ')">';
+        html += escapeHtml(paragraph.preview);
+        html += '</div>';
+
+        html += '<ul class="warning-list">';
+
+        paragraph.warnings.forEach(function (warning) {
+          html += '<li>' + escapeHtml(normalizePluralText(warning)) + '</li>';
+        });
+
+        html += '</ul>';
+        html += pagerControls('paragraph', items.length);
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderLemmaPager(result) {
+        const items = result.lemma_repetitions || [];
+
+        if (items.length === 0) {
+          return renderEmptyCard('Lemma-based repetitions', 'No repeated lemmas detected.');
+        }
+
+        const index = clampIndex(pagerState.lemma, items.length);
+        pagerState.lemma = index;
+        const item = items[index];
+
+        let html = '<div class="card">';
+        html += cardTitle('Lemma-based repetitions', index + 1, items.length);
+        html += '<p><strong>' + escapeHtml(item.lemma) + '</strong>: ';
+        html += item.count + ' ' + pluralWord(item.count, 'time', 'times') + '</p>';
+
+        if (item.forms && item.forms.length > 0) {
+          html += '<div class="small">Forms:</div>';
+
+          item.forms.forEach(function (form) {
+            html += '<span class="pill">' +
+              escapeHtml(form.form) +
+              ' · ' +
+              form.count +
+              ' ' +
+              pluralWord(form.count, 'time', 'times') +
+              '</span>';
+          });
+        }
+
+        html += pagerControls('lemma', items.length);
+        html += '</div>';
+
+        return html;
+      }
+
+      function renderEntityPager(result) {
+        const items = result.named_entities && result.named_entities.entities
+          ? result.named_entities.entities
+          : [];
+
+        if (items.length === 0) {
+          return renderEmptyCard('Named entities', 'No named entities detected.');
+        }
+
+        const index = clampIndex(pagerState.entity, items.length);
+        pagerState.entity = index;
+        const item = items[index];
+
+        let html = '<div class="card">';
+        html += cardTitle('Named entities', index + 1, items.length);
+        html += '<p><strong>' + escapeHtml(item.text) + '</strong></p>';
+        html += '<span class="pill">' + escapeHtml(item.label) + '</span>';
+        html += '<p class="small">' + escapeHtml(item.description || '') + '</p>';
+        html += '<p>' + item.count + ' ' + pluralWord(item.count, 'time', 'times') + '</p>';
+        html += pagerControls('entity', items.length);
+        html += '</div>';
+
+        return html;
+      }
+
+      function getWarningSentences(result) {
+        if (!result || !result.sentence_analysis) {
+          return [];
+        }
+
+        return result.sentence_analysis.filter(function (sentence) {
+          return sentence.warnings && sentence.warnings.length > 0;
+        });
+      }
+
+      function getParagraphWarnings(result) {
+        if (!result || !result.paragraph_analysis) {
+          return [];
+        }
+
+        return result.paragraph_analysis.filter(function (paragraph) {
+          return paragraph.warnings && paragraph.warnings.length > 0;
+        });
+      }
+
+      function selectSentence(index) {
+        const warnings = getWarningSentences(latestAnalysis);
+
+        if (!warnings[index]) {
+          renderError('Selection failed.', 'This sentence is not available anymore.');
+          return;
+        }
+
+        setLoading(true, 'Selecting sentence in document...');
+
+        google.script.run
+          .withSuccessHandler(function () {
+            setLoading(false, 'Sentence selected in the document.');
+          })
+          .withFailureHandler(function (error) {
+            setLoading(false, 'Selection failed: ' + error.message);
+          })
+          .selectSentenceInDocument(warnings[index].text);
+      }
+
+      function selectParagraph(index) {
+        const paragraphs = getParagraphWarnings(latestAnalysis);
+
+        if (!paragraphs[index]) {
+          renderError('Selection failed.', 'This paragraph is not available anymore.');
+          return;
+        }
+
+        setLoading(true, 'Selecting paragraph in document...');
+
+        google.script.run
+          .withSuccessHandler(function () {
+            setLoading(false, 'Paragraph selected in the document.');
+          })
+          .withFailureHandler(function (error) {
+            setLoading(false, 'Selection failed: ' + error.message);
+          })
+          .selectParagraphInDocument(paragraphs[index].number);
+      }
+
+      function changePage(type, direction) {
+        const total = getPagerLength(type);
+
+        if (total <= 0) {
+          return;
+        }
+
+        pagerState[type] = loopIndex(pagerState[type] + direction, total);
+        renderAnalysis(latestAnalysis);
+      }
+
+      function getPagerLength(type) {
+        if (!latestAnalysis) {
+          return 0;
+        }
+
+        if (type === 'overview') {
+          return (latestAnalysis.analysis_overview || latestAnalysis.suggestions || []).length;
+        }
+
+        if (type === 'warning') {
+          return getWarningSentences(latestAnalysis).length;
+        }
+
+        if (type === 'lemma') {
+          return (latestAnalysis.lemma_repetitions || []).length;
+        }
+
+        if (type === 'entity') {
+          return latestAnalysis.named_entities && latestAnalysis.named_entities.entities
+            ? latestAnalysis.named_entities.entities.length
+            : 0;
+        }
+
+        if (type === 'paragraph') {
+          return getParagraphWarnings(latestAnalysis).length;
+        }
+
+        if (type === 'misspelling') {
+          return latestAnalysis.base_vocabulary && latestAnalysis.base_vocabulary.possible_misspellings
+            ? latestAnalysis.base_vocabulary.possible_misspellings.length
+            : 0;
+        }
+
+        return 0;
+      }
+
+      function pagerControls(type, total) {
+        if (total <= 1) {
+          return '';
+        }
+
+        return '<div class="pager">' +
+          '<button class="light" onclick="changePage(\'' + type + '\', -1)">Previous</button>' +
+          '<button class="light" onclick="changePage(\'' + type + '\', 1)">Next</button>' +
+          '</div>';
+      }
+
+      function cardTitle(title, current, total) {
+        return '<div class="card-title"><span>' +
+          escapeHtml(title) +
+          '</span><span class="counter">' +
+          current +
+          '/' +
+          total +
+          '</span></div>';
+      }
+
+      function renderEmptyCard(title, message) {
+        return '<div class="card good-card">' +
+          '<div class="card-title"><span>' +
+          escapeHtml(title) +
+          '</span><span class="counter">0/0</span></div>' +
+          escapeHtml(message) +
+          '</div>';
+      }
+
+      function exportReport(format) {
+        const message = format === 'pdf'
+          ? 'Creating PDF report...'
+          : 'Creating DOCX report...';
+
+        setLoading(true, message);
+
+        const runner = google.script.run
+          .withSuccessHandler(function (file) {
+            setLoading(false, 'Export completed.');
+
+            document.getElementById('status').innerHTML =
+              'Export completed: <a href="' +
+              escapeHtml(file.url) +
+              '" target="_blank">' +
+              escapeHtml(file.fileName) +
+              '</a>';
+          })
+          .withFailureHandler(function (error) {
+            setLoading(false, 'Export failed: ' + error.message);
+            renderError('Export failed.', error.message);
+          });
+
+        if (format === 'pdf') {
+          runner.exportReportAsPdf(getSelectedTargetAudiences());
+        } else {
+          runner.exportReportAsDocx(getSelectedTargetAudiences());
+        }
+      }
+
+      function getAnalyzedDocument() {
+        setLoading(true, 'Creating analyzed document...');
+
+        google.script.run
+          .withSuccessHandler(function (file) {
+            setLoading(false, 'Analyzed document created.');
+
+            document.getElementById('status').innerHTML =
+              'Analyzed document created: <a href="' +
+              escapeHtml(file.url) +
+              '" target="_blank">' +
+              escapeHtml(file.fileName) +
+              '</a>';
+          })
+          .withFailureHandler(function (error) {
+            setLoading(false, 'Analyzed document failed: ' + error.message);
+            renderError('Analyzed document failed.', error.message);
+          })
+          .createAnalyzedDocument(getSelectedTargetAudiences());
+      }
+
+      function setLoading(isLoading, message) {
+        const buttons = document.querySelectorAll('button');
+
+        buttons.forEach(function (button) {
+          button.disabled = isLoading;
+        });
+
+        document.getElementById('status').innerText = message;
+      }
+
+      function renderError(title, message) {
+        document.getElementById('results').innerHTML =
+          '<div class="card error-card">' +
+          '<div class="card-title"><span>' +
+          escapeHtml(title) +
+          '</span></div>' +
+          '<p>' +
+          escapeHtml(message) +
+          '</p>' +
+          '</div>';
+      }
+
+      function metricRow(label, value) {
+        return '<div class="metric"><span>' +
+          escapeHtml(label) +
+          '</span><strong>' +
+          escapeHtml(String(value)) +
+          '</strong></div>';
+      }
+
+      function clampIndex(index, total) {
+        if (total <= 0) {
+          return 0;
+        }
+
+        if (index < 0) {
+          return 0;
+        }
+
+        if (index >= total) {
+          return total - 1;
+        }
+
+        return index;
+      }
+
+      function loopIndex(index, total) {
+        if (total <= 0) {
+          return 0;
+        }
+
+        return ((index % total) + total) % total;
+      }
+
+      function pluralWord(count, singular, plural) {
+        return Number(count) === 1 ? singular : plural;
+      }
+
+      function normalizePluralText(text) {
+        return String(text)
+          .replace(/\b1 sentence\(s\)/g, '1 sentence')
+          .replace(/\b([2-9]\d*|0) sentence\(s\)/g, '$1 sentences')
+          .replace(/\b1 paragraph\(s\)/g, '1 paragraph')
+          .replace(/\b([2-9]\d*|0) paragraph\(s\)/g, '$1 paragraphs')
+          .replace(/\b1 word\(s\)/g, '1 word')
+          .replace(/\b([2-9]\d*|0) word\(s\)/g, '$1 words')
+          .replace(/\b1 time\(s\)/g, '1 time')
+          .replace(/\b([2-9]\d*|0) time\(s\)/g, '$1 times')
+          .replace(/\(s\)/g, 's');
+      }
+
+      function formatValue(value) {
+        if (value === null || value === undefined) {
+          return 'N/A';
+        }
+
+        return String(value);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    </script>
+  </body>
+</html>
