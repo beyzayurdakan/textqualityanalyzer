@@ -1,3 +1,14 @@
-**TODO : Please modify this file according to the following**
+### Authors
+Project
+Text Quality Analyzer
 
-Fill the document with the authors and the contact references
+Authors
+Emanuela Ibra (7337222)
+Yakup Gürer (7969041)
+Course
+Software Engineering (80154)
+
+DIBRIS – Università di Genova
+
+Academic Year
+2025/2026
